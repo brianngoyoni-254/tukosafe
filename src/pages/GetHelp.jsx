@@ -1,29 +1,76 @@
 import { useState } from 'react';
-import { LuLightbulb, LuUserRound, LuMapPin, LuCar, LuWifiOff } from 'react-icons/lu';
-import { useApp } from '../context/app-context';
+import {
+  LuLightbulb, LuUserRound, LuMapPin, LuCar, LuLifeBuoy,
+  LuCircleAlert, LuCircleCheck, LuX,
+} from 'react-icons/lu';
+import { useApp } from '../context/AppContext';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Toggle from '../components/ui/Toggle';
 import SosButton from '../components/SosButton';
-import { copilotClassify, COPILOT_DRAFTS } from '../lib/messages';
+import { classifyGetMeHome, draftMessage } from '../lib/ai';
 
 const OPTIONS = [
-  { n: 1, icon: LuUserRound, label: 'Contact a trusted friend' },
-  { n: 2, icon: LuMapPin, label: 'Share location and ask for help' },
-  { n: 3, icon: LuCar, label: 'Arrange a safe journey home' },
+  { n: 1, icon: LuUserRound, label: 'Contact a trusted friend', hint: 'Low urgency. A quiet message.' },
+  { n: 2, icon: LuMapPin, label: 'Share location and ask for help', hint: 'High urgency. Someone should come now.' },
+  { n: 3, icon: LuCar, label: 'Arrange a safe journey home', hint: 'Transport. Share your trip home.' },
 ];
 
 export default function GetHelp() {
-  const { ai, offline, setOffline, outbox, send, showToast } = useApp();
+  const { ai, offline, setOffline, outbox, send, showToast, requestSupport } = useApp();
   const [text, setText] = useState('');
-  const [suggestion, setSuggestion] = useState(null);
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [drafted, setDrafted] = useState(null);
+  const [message, setMessage] = useState('');
 
-  const runCopilot = () => {
-    if (!text.trim()) return showToast('Type a few words first, or pick an option below.');
+  const askAI = () => {
+    if (!text.trim()) return showToast('Type a few words first.');
     if (!ai.copilot) return showToast('Copilot is off. Choose one of the three options below.');
-    setSuggestion(copilotClassify(text));
+    setLoading(true);
+    // Simulated latency so the UI feels deliberate, not instant
+    setTimeout(() => {
+      const r = classifyGetMeHome(text);
+      setResult(r);
+      if (r.option > 0 && r.confidence !== 'low') {
+        setDrafted(r.option);
+        setMessage(draftMessage(r.option));
+      }
+      setLoading(false);
+    }, 450);
   };
+
+  const chooseOption = (n) => {
+    setResult(null);
+    setDrafted(n);
+    setMessage(draftMessage(n));
+  };
+
+  const handleSupport = () => {
+    requestSupport({ context: 'get_me_home', userMessage: text });
+  };
+
+  const handleTextChange = (value) => {
+    setText(value);
+    if (!value.trim()) {
+      setResult(null);
+      setDrafted(null);
+      setMessage('');
+      return;
+    }
+
+    setResult({
+      option: 2,
+      confidence: 'high',
+      source: 'autofill',
+      reasoning: 'Your message is ready as a request for help.',
+    });
+    setDrafted(2);
+    setMessage(`${draftMessage(2)} Details: ${value.trim()}`);
+  };
+
+  const lowConfidence =
+    result && (result.option === 0 || result.confidence === 'low' || result.supportAvailable);
 
   return (
     <>
@@ -33,53 +80,125 @@ export default function GetHelp() {
             <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
             Get help
           </span>
-          <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">Ask quietly. Or hold SOS.</h2>
-          <p className="text-white/90 max-w-[58ch] m-0">Get Me Home, SOS, and a direct line to 999 and 112.</p>
+          <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">
+            Ask quietly. Or hold SOS.
+          </h2>
+          <p className="text-[#bfe0da] max-w-[58ch] m-0">
+            English, Kiswahili, or Sheng. Get Me Home, SOS, and a direct line to 999 and 112.
+          </p>
         </div>
       </div>
+
       <div className="max-w-[1120px] mx-auto px-5 -mt-11 relative">
         <div className="grid lg:grid-cols-[1.5fr_1fr] gap-5 items-start">
           <div className="space-y-3.5">
             <Card>
               <h3 className="font-display font-extrabold text-lg m-0 mb-1">Get Me Home</h3>
-              <label htmlFor="gt" className="text-mut text-sm">Describe it in a few words, in any language.</label>
-              <input
-                id="gt"
-                type="text"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="e.g. “Mambo si poa hapa”"
-                className="w-full mt-1.5 p-2.5 rounded-lg border border-line bg-surface text-ink font-body"
-              />
-              <div className="mt-2.5 mb-2.5">
-                <Button onClick={runCopilot}><LuLightbulb size={16} /> Suggest an option</Button>
+              <label htmlFor="gt" className="text-mut text-sm">
+                Type anything about what’s happening. We’ll prepare a request for help automatically.
+              </label>
+              <div className="flex gap-2 mt-1.5">
+                <input
+                  id="gt"
+                  type="text"
+                  value={text}
+                  onChange={(e) => handleTextChange(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && askAI()}
+                  placeholder="What’s happening?"
+                  className="flex-1 p-2.5 rounded-lg border border-line bg-white text-ink font-body"
+                />
+                <Button onClick={askAI} disabled={loading}>
+                  <LuLightbulb size={16} />
+                  {loading ? 'Thinking…' : 'Ask AI'}
+                </Button>
               </div>
-              {suggestion && (
-                <div className="p-3 rounded-lg bg-accentbg mb-3">
-                  <span className="inline-block px-2 py-0.5 rounded-md bg-surface text-accent text-xs font-bold">AI-drafted</span>{' '}
-                  Suggested: option {suggestion}
-                  <div className="text-mut text-xs mt-1">Based on: your words only, venue name, time. No coordinates sent.</div>
+
+              {/* Positive result */}
+              {result && !lowConfidence && (
+                <div className="mt-3 p-3 rounded-lg bg-mint border border-teal2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white text-teal text-xs font-bold">
+                      <LuCircleCheck size={12} /> {result.source === 'autofill' ? 'Help request ready' : 'AI suggestion'}
+                    </span>
+                    <button
+                      onClick={() => { setResult(null); setDrafted(null); }}
+                      className="text-mut hover:text-ink"
+                      aria-label="Dismiss"
+                    >
+                      <LuX size={16} />
+                    </button>
+                  </div>
+                  <p className="mt-1.5 mb-0 font-bold">
+                    {result.source === 'autofill'
+                      ? 'It sounds like you need help.'
+                      : `Option ${result.option} — ${OPTIONS.find((o) => o.n === result.option)?.label}`}
+                  </p>
+                  <p className="text-mut text-xs mt-1 mb-0">{result.reasoning}</p>
+                  {result.matchedPhrase && (
+                    <p className="text-mut text-xs mt-0.5 mb-0">
+                      Matched phrase: “{result.matchedPhrase}” ({result.meaning})
+                    </p>
+                  )}
                 </div>
               )}
-              <div className="space-y-2">
-                {OPTIONS.map(({ n, icon: Icon, label }) => (
-                  <Button key={n} variant="outline" className="w-full !justify-start" onClick={() => setDrafted(n)}>
-                    <Icon size={16} /> {n} · {label}
+
+              {/* Low confidence → support fallback */}
+              {lowConfidence && (
+                <div className="mt-3 p-3 rounded-lg bg-amberbg border border-amber">
+                  <p className="flex items-center gap-2 font-bold text-amber m-0">
+                    <LuCircleAlert size={16} /> I’m not sure I understood that correctly.
+                  </p>
+                  <p className="text-sm text-mut mt-1 mb-2">
+                    {result.reasoning}. A human moderator can help — or pick an option below.
+                    In an emergency, call 999 or 112.
+                  </p>
+                  <Button variant="amber" onClick={handleSupport}>
+                    <LuLifeBuoy size={16} /> Talk to support
                   </Button>
+                </div>
+              )}
+
+              {/* Manual options — always available */}
+              <p className="text-mut text-xs mt-4 mb-1.5">Or choose manually:</p>
+              <div className="space-y-2">
+                {OPTIONS.map(({ n, icon: Icon, label, hint }) => (
+                  <button
+                    key={n}
+                    onClick={() => chooseOption(n)}
+                    className={`w-full text-left p-3 rounded-lg border-2 transition flex items-start gap-3 ${
+                      drafted === n
+                        ? 'border-teal bg-mint'
+                        : 'border-line bg-white hover:border-teal2'
+                    }`}
+                  >
+                    <Icon size={18} className="mt-0.5 shrink-0" />
+                    <div>
+                      <b className="text-sm">{n} · {label}</b>
+                      <div className="text-mut text-xs mt-0.5">{hint}</div>
+                    </div>
+                  </button>
                 ))}
               </div>
+
+              {/* Draft review */}
               {drafted && (
                 <div className="mt-3 p-3 border border-line rounded-lg">
                   <b>Review your message</b>
                   <textarea
                     rows={3}
-                    defaultValue={COPILOT_DRAFTS[drafted]}
-                    className="w-full mt-1.5 p-2.5 rounded-lg border border-line bg-surface text-ink font-body"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="w-full mt-1.5 p-2.5 rounded-lg border border-line bg-white text-ink font-body"
                   />
                   <div className="text-mut text-xs mt-1">
-                    You edit it, you send it.{drafted === 3 ? ' Transport links are simulated.' : ''}
+                    You edit it, you send it. {drafted === 3 && 'Transport links are simulated.'}
                   </div>
-                  <Button className="mt-2" onClick={() => send('Message to friend')}>Approve and send</Button>
+                  <div className="flex gap-2 mt-2">
+                    <Button onClick={() => send('Message to friend')}>Approve and send</Button>
+                    <Button variant="outline" onClick={() => { setDrafted(null); setMessage(''); }}>
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
               )}
             </Card>
@@ -87,7 +206,7 @@ export default function GetHelp() {
             <Card>
               <div className="flex justify-between items-center gap-3 flex-wrap">
                 <div>
-                  <b className="inline-flex items-center gap-1.5"><LuWifiOff size={14} /> Simulate offline mode</b>
+                  <b>Simulate offline mode</b>
                   <div className="text-mut text-sm">SOS and check-ins queue until you reconnect.</div>
                 </div>
                 <Toggle checked={offline} onChange={setOffline} label="Offline" />
