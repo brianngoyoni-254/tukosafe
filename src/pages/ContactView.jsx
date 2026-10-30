@@ -4,7 +4,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Chip from '../components/ui/Chip';
 import MapView from '../components/MapView';
-import { buildSituationBrief } from '../lib/messages';
+import { buildSituationBrief } from '../lib/ai';
 import { AI_FACTS } from '../data/dummy';
 
 export default function ContactView() {
@@ -43,7 +43,16 @@ export default function ContactView() {
     );
   }
 
-  const brief = buildSituationBrief({ aiEnabled: ai.brief, aiFail });
+  const brief = buildSituationBrief(
+    {
+      name: AI_FACTS.name,
+      location: AI_FACTS.lastLocationLabel,
+      time: AI_FACTS.lastLocationTime,
+      battery: AI_FACTS.battery,
+      usualTrip: AI_FACTS.usualTripMinutes,
+    },
+    { aiEnabled: ai.brief, aiFail }
+  );
 
   return (
     <>
@@ -53,9 +62,11 @@ export default function ContactView() {
             <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
             Contact view
           </span>
-          <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">What your friend sees</h2>
-          <p className="text-white/90 max-w-[58ch] m-0">
-            Sample contact brief from fixed demo facts. It is not sent to anyone.
+          <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">
+            What your friend sees
+          </h2>
+          <p className="text-[#bfe0da] max-w-[58ch] m-0">
+            The brief a trusted friend gets when you miss a check-in or press SOS.
           </p>
         </div>
       </div>
@@ -70,7 +81,9 @@ export default function ContactView() {
               </span>
             ) : (
               <>
-                <span className="inline-block px-2 py-0.5 rounded-md bg-amberbg text-amber text-xs font-bold">Template alert</span>
+                <span className="inline-block px-2 py-0.5 rounded-md bg-amberbg text-amber text-xs font-bold">
+                  Template alert
+                </span>
                 <div className="text-mut text-sm mt-1">{brief.why}</div>
               </>
             )}
