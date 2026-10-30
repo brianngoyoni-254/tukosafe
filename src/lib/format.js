@@ -7,7 +7,7 @@ export function formatTime(ts) {
 }
 
 export function compassLabel(deg) {
-  if (deg == null || isNaN(deg)) return '—';
+  if (deg == null || isNaN(deg)) return '-';
   const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
   return `${Math.round(deg)}° ${dirs[Math.round(deg / 45) % 8]}`;
 }

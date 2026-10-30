@@ -111,7 +111,7 @@ export default function Signup() {
           </div>
         </div>
         <div className="relative z-10 text-sm text-[#8fb9b2]">
-          From the Swahili <i>tuko salama</i> — “we are safe”.
+          From the Swahili <i>tuko salama</i> - “we are safe”.
         </div>
         <div className="absolute -left-40 -bottom-40 w-[480px] h-[480px] rounded-full border border-teal2/20 animate-[pulse-ring_8s_ease-out_infinite]" />
         <div className="absolute -left-20 -bottom-20 w-[320px] h-[320px] rounded-full border border-teal2/15 animate-[pulse-ring_8s_ease-out_infinite_2s]" />
