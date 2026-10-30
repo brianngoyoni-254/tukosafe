@@ -27,7 +27,7 @@ export default function App() {
         <DataProvider>
         <BrowserRouter>
           <Routes>
-            {/* Auth pages — no layout chrome */}
+            {/* Auth pages - no layout chrome */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

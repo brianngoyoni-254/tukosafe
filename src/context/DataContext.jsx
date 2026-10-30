@@ -54,7 +54,7 @@ export function DataProvider({ children }) {
       // Tell the server this device actually received it (drives "delivered" on SOS).
       api.markNotificationDelivered(row.id).catch(() => {});
       const urgent = row.type === 'sos' || row.type === 'missed_checkin';
-      toastRef.current(`${urgent ? '⚠ ' : ''}${row.title}${row.body ? `: ${row.body}` : ''}`);
+      toastRef.current(`${urgent ? 'Alert ' : ''}${row.title}${row.body ? `: ${row.body}` : ''}`);
       if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && document.hidden) {
         try { new Notification(row.title, { body: row.body || '', tag: row.id }); } catch { /* unsupported */ }
       }

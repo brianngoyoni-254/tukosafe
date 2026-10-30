@@ -80,7 +80,7 @@ export default function Login() {
             <span className="text-amber">Get home safe.</span>
           </h1>
           <p className="text-[#bfe0da] text-lg max-w-[42ch]">
-            Sign in to pick up where you left off — your outings, contacts and check-ins are waiting.
+            Sign in to pick up where you left off - your outings, contacts and check-ins are waiting.
           </p>
           <div className="mt-8 grid grid-cols-2 gap-3 max-w-[440px]">
             {[

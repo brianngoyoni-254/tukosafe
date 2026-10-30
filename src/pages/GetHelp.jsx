@@ -151,7 +151,7 @@ export default function GetHelp() {
                   <p className="mt-1.5 mb-0 font-bold">
                     {result.source === 'autofill'
                       ? 'It sounds like you need help.'
-                      : `Option ${result.option} — ${OPTIONS.find((o) => o.n === result.option)?.label}`}
+                      : `Option ${result.option} - ${OPTIONS.find((o) => o.n === result.option)?.label}`}
                   </p>
                   <p className="text-mut text-xs mt-1 mb-0">{result.reasoning}</p>
                   {result.matchedPhrase && (
@@ -169,7 +169,7 @@ export default function GetHelp() {
                     <LuCircleAlert size={16} /> I’m not sure I understood that correctly.
                   </p>
                   <p className="text-sm text-mut mt-1 mb-2">
-                    {result.reasoning}. A human moderator can help — or pick an option below.
+                    {result.reasoning}. A human moderator can help - or pick an option below.
                     In an emergency, call 999 or 112.
                   </p>
                   <Button variant="amber" onClick={handleSupport}>
@@ -178,7 +178,7 @@ export default function GetHelp() {
                 </div>
               )}
 
-              {/* Manual options — always available */}
+              {/* Manual options - always available */}
               <p className="text-mut text-xs mt-4 mb-1.5">Or choose manually:</p>
               <div className="space-y-2">
                 {OPTIONS.map(({ n, icon: Icon, label, hint }) => (
