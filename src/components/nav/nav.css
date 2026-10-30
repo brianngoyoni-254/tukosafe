@@ -1,4 +1,31 @@
 /* Navbar: blends into the hero (same deep colour at its bottom edge), one line of links, 72px tall. */
+:root { --nav-h: 72px; }
+
+/* On the home page the hero artwork continues underneath a translucent, blurred navbar.
+   The header's negative bottom margin lets the hero start at the very top; the hero adds the same amount of top
+   padding, so nothing in the hero moves. Once the page scrolls it becomes nearly opaque for readability. */
+.tk-header[data-overlay='true'] {
+  /* Tablets/phones: no blur (it is costly on weaker GPUs/CPUs), so the bar is a little more opaque instead. */
+  background: linear-gradient(180deg, rgba(6, 20, 34, 0.82), rgba(6, 20, 34, 0.55));
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+  margin-bottom: calc(-1 * (var(--nav-h) + 1px));
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+/* Wide screens: a gentle frosted-glass blur over the moving artwork. */
+@media (min-width: 1024px) {
+  .tk-header[data-overlay='true'] {
+    background: linear-gradient(180deg, rgba(6, 20, 34, 0.7), rgba(6, 20, 34, 0.36));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+.tk-header[data-overlay='true'][data-scrolled='true'] {
+  background: rgba(7, 24, 38, 0.92);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 10px 28px -18px rgba(0, 0, 0, 0.6);
+}
 /* In the components layer so Tailwind utilities (hidden, md:inline-flex, ...) can override these. */
 @layer components {
 .tk-header {

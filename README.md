@@ -90,6 +90,20 @@ keeps it in `sessionStorage` (gone when the browser session ends). Registration 
 link signs the user in. A profile row is created by a database trigger at registration (and `ensure_profile()` repairs it
 if it is ever missing).
 
+## Homepage artwork
+
+The hero uses a night-time, satellite-style Nairobi map with three drifting cloud layers (`src/components/hero/`).
+All images in `public/hero/` are **original procedural art** produced by `scripts/generate-hero-assets.mjs`
+(no third-party photos or map tiles, so nothing to license). The geography is a stylised approximation, not survey data.
+
+- Regenerate: `npm run build:hero` (needs `npx playwright install chromium`). Tweak colours, density or cloud coverage in that script.
+- Clouds are seamless tiles moved with CSS `transform` only (no JavaScript animation loop). They pause when the tab is
+  hidden or the hero is off screen, are reduced on phones, and stay as a still frame with `prefers-reduced-motion`.
+- The artwork is `position: absolute; pointer-events: none` behind all content and cannot change layout.
+  `node scripts/layout-snapshot.mjs out.json` records element positions so a change can be checked for layout drift.
+- To use a licensed photo instead, replace `public/hero/nairobi-map.webp` (keep the city around 60% across, 55% down,
+  and leave the left third dark: the headline sits there).
+
 ## Notifications (in-app, web push, email, SMS)
 
 In-app notifications work with no extra setup. Extra channels are optional, opt-in per user, and **unverified until

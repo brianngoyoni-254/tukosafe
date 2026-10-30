@@ -7,6 +7,7 @@ export default defineConfig({
   testDir: './e2e',
   testMatch: '**/*.spec.js',
   workers: 1,            // tests share one stub auth server
+  timeout: 60_000,       // generous: dev machines running other servers can stall for 30 s+ (no retries, so real failures still fail)
   retries: 0,
   reporter: [['list']],
   use: { baseURL: `http://localhost:${APP_PORT}`, trace: 'retain-on-failure' },

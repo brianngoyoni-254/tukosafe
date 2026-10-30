@@ -1,0 +1,100 @@
+/* ───────── Cinematic hero background ─────────
+   Only transform / opacity are animated. Nothing here takes part in layout (position:absolute, pointer-events:none). */
+.hero-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; contain: paint; background: var(--color-deep); }
+.hero-bg > * { position: absolute; inset: 0; }
+
+.hero-bg-map {
+  background: url('/hero/nairobi-map.webp') 58% 50% / cover no-repeat;
+  transform: translateZ(0);
+}
+
+/* colour grading + a darker top so the translucent navbar always reads, and a fade into the page below */
+.hero-bg-light {
+  background:
+    radial-gradient(48% 62% at 72% 46%, color-mix(in srgb, var(--color-accent) 24%, transparent), transparent 72%),
+    linear-gradient(180deg, rgba(5, 18, 32, 0.66) 0%, rgba(5, 18, 32, 0.12) 20%, rgba(5, 18, 32, 0) 58%, rgba(5, 18, 32, 0.5) 100%);
+}
+
+/* ───────── clouds ─────────
+   --tw/--th = size of one seamless tile. The track is one tile larger than the layer and is translated by exactly one
+   tile, so the loop is invisible. Different durations, directions and delays keep the motion from looking mechanical. */
+.cloud { overflow: hidden; animation: cloud-breathe var(--breathe, 21s) ease-in-out infinite alternate; }
+.cloud-track {
+  position: absolute; top: 0; left: 0;
+  width: calc(100% + var(--tw)); height: calc(100% + var(--th));
+  background-repeat: repeat; background-size: var(--tw) var(--th);
+  will-change: transform; backface-visibility: hidden;
+  animation: var(--drift) var(--dur) linear infinite; animation-delay: var(--delay);
+}
+
+.cloud--large  { --tw: clamp(1200px, 125vw, 2300px); --th: calc(var(--tw) / 1.78); --dur: 90s;  --delay: -34s; --drift: cloud-x;    --o-min: .72; --o-max: 1;   --breathe: 23s; }
+.cloud--medium { --tw: clamp(820px, 72vw, 1350px);  --th: var(--tw);               --dur: 58s;  --delay: -12s; --drift: cloud-diag; --o-min: .62; --o-max: .95; --breathe: 17s; }
+.cloud--wisps  { --tw: clamp(1000px, 90vw, 1800px); --th: calc(var(--tw) / 2.5);   --dur: 38s;  --delay: -21s; --drift: cloud-x;    --o-min: .5;  --o-max: .85; --breathe: 29s; }
+.cloud--large  .cloud-track { background-image: url('/hero/clouds-large.webp'); }
+.cloud--medium .cloud-track { background-image: url('/hero/clouds-medium.webp'); }
+.cloud--wisps  .cloud-track { background-image: url('/hero/clouds-wisps.webp'); }
+.cloud--wisps  .cloud-track { top: 18%; }
+
+@keyframes cloud-x    { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(calc(-1 * var(--tw)), 0, 0); } }
+@keyframes cloud-diag { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(calc(-1 * var(--tw)), calc(-1 * var(--th)), 0); } }
+@keyframes cloud-breathe { from { opacity: var(--o-min); } to { opacity: var(--o-max); } }
+
+/* darker on the left so the headline stays readable; the map stays visible around the phone */
+.hero-bg-shade {
+  background:
+    linear-gradient(90deg, rgba(6, 20, 34, 0.95) 0%, rgba(6, 20, 34, 0.84) 28%, rgba(6, 20, 34, 0.5) 46%, rgba(6, 20, 34, 0.1) 66%, rgba(6, 20, 34, 0) 80%);
+}
+
+/* ───────── decorative location glow ───────── */
+.loc-layer { pointer-events: none; }
+.loc { position: absolute; width: 0; height: 0; }
+.loc--a { left: 47%; top: 25%; }
+.loc--b { left: 88%; top: 30%; }
+.loc--c { left: 92%; top: 61%; }
+.loc--d { left: 54%; top: 71%; }
+.loc--e { left: 95%; top: 50%; }
+
+.loc-dot { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%; box-sizing: border-box; border: 3px solid #2f8bff; background: rgba(8, 24, 44, 0.85); box-shadow: 0 0 14px 2px rgba(47, 139, 255, 0.75); }
+.loc-ring { position: absolute; left: -48px; top: -48px; width: 96px; height: 96px; border-radius: 50%; box-sizing: border-box; border: 1.5px solid rgba(80, 160, 255, 0.7); opacity: 0; transform: scale(0.3); animation: loc-pulse 5.2s ease-out infinite; }
+.loc-ring--2 { animation-delay: 1.7s; }
+.loc-ring--3 { animation-delay: 3.4s; }
+.loc--b .loc-ring { animation-duration: 6.1s; } .loc--c .loc-ring { animation-duration: 5.6s; }
+.loc-badge {
+  position: absolute; left: -22px; top: -92px; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  font: 800 17px var(--font-display); color: #fff; border: 2.5px solid #fff; box-shadow: 0 6px 18px rgba(0, 10, 30, 0.55), 0 0 0 4px rgba(47, 139, 255, 0.35);
+}
+.loc-badge--teal { background: linear-gradient(145deg, #1aa593, #0b5f5c); }
+.loc-badge--blue { background: linear-gradient(145deg, #3b8fe0, #1b4f93); }
+.loc-badge--violet { background: linear-gradient(145deg, #8a78d8, #4a3a99); }
+
+.loc-pin { position: absolute; left: -11px; top: -34px; width: 22px; height: 22px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: linear-gradient(135deg, #f5b04a, #c47a00); box-shadow: 0 0 18px 4px rgba(245, 160, 50, 0.55); animation: loc-bob 4.5s ease-in-out infinite; }
+.loc-pin i { position: absolute; inset: 6px; border-radius: 50%; background: #1a1205; }
+.loc--e .loc-pin { animation-delay: -2s; }
+
+@keyframes loc-pulse { 0% { opacity: 0.75; transform: scale(0.3); } 100% { opacity: 0; transform: scale(1.5); } }
+@keyframes loc-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5px; } }
+
+/* ───────── pause (tab hidden / hero off screen) ───────── */
+.hero-bg[data-paused='true'] *, .hero-bg[data-paused='true'] { animation-play-state: paused !important; }
+
+/* ───────── responsive ───────── */
+@media (max-width: 1099px) { .loc--a { display: none; } }
+@media (max-width: 767px) {
+  .hero-bg-map { background-position: 66% 50%; }
+  .cloud--wisps { display: none; }                          /* fewer layers on phones */
+  .cloud--large  { --o-min: .45; --o-max: .7; }
+  .cloud--medium { --o-min: .35; --o-max: .55; }
+  .loc--c, .loc--d, .loc--e { display: none; }
+  .loc--b { left: 88%; top: 64%; transform: scale(0.7); }   /* down by the phone, clear of the headline area */
+  .hero-bg-shade { background: linear-gradient(180deg, rgba(6, 20, 34, 0.93) 0%, rgba(6, 20, 34, 0.86) 52%, rgba(6, 20, 34, 0.4) 74%, rgba(6, 20, 34, 0.1) 100%); }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .hero-bg-shade { background: linear-gradient(90deg, rgba(6, 20, 34, 0.95) 0%, rgba(6, 20, 34, 0.86) 40%, rgba(6, 20, 34, 0.35) 62%, rgba(6, 20, 34, 0) 80%); }
+}
+
+/* ───────── reduced motion: a still frame (clouds stay visible, nothing moves) ───────── */
+@media (prefers-reduced-motion: reduce) {
+  .cloud, .cloud-track, .loc-ring, .loc-pin { animation: none !important; }
+  .cloud { opacity: .6; }
+  .loc-ring--1 { opacity: .4; transform: scale(1); }
+}

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { LuHouse, LuCircleAlert, LuUsers, LuMap, LuMessageCircle, LuShieldCheck, LuCompass } from 'react-icons/lu';
 import { useAuth } from '../context/AuthContext';
 import Dashboard from './Dashboard';
-import './home.css';
+import CinematicHeroBackground from '../components/hero/CinematicHeroBackground';
 import Button from '../components/ui/Button';
 import PhoneSlideshow from '../components/phone/PhoneSlideshow';
 
@@ -30,9 +30,11 @@ export default function Home() {
 function MarketingHome() {
   return (
     <>
-      <section className="relative overflow-hidden bg-deep text-white pt-8 md:pt-12 pb-28 md:pb-32 -mt-px">
-        <div className="hero-glow" aria-hidden="true" />
-        <div className="relative max-w-[1120px] mx-auto px-5 grid md:grid-cols-[1.05fr_.95fr] gap-8 md:gap-10 items-center">
+      {/* The hero starts at the very top of the page, underneath the translucent navbar; the extra top padding equals the
+          navbar height (72px + 1px border), so the content sits exactly where it did before the artwork was added. */}
+      <section className="relative overflow-hidden bg-deep text-white pt-[calc(var(--nav-h)+1px+2rem)] md:pt-[calc(var(--nav-h)+1px+3rem)] pb-28 md:pb-32 -mt-px">
+        <CinematicHeroBackground />
+        <div className="relative z-10 max-w-[1120px] mx-auto px-5 grid md:grid-cols-[1.05fr_.95fr] gap-8 md:gap-10 items-center">
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-white/90 text-sm mb-5">
               <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />

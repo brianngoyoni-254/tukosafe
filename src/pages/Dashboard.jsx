@@ -37,7 +37,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-deep text-white pt-12 pb-28">
+      <section className="relative overflow-hidden bg-deep text-white pt-[calc(var(--nav-h)+1px+3rem)] pb-28">
         <div className="max-w-[1120px] mx-auto px-5">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-[#bfe0da] text-sm mb-4">
             <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />

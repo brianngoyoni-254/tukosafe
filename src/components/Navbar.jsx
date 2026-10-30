@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LuHouse, LuMenu, LuX, LuPhone } from 'react-icons/lu';
 import { PRIMARY_NAV } from './nav/navItems';
@@ -27,11 +27,23 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const toggleRef = useRef(null);
+  // The home page shows artwork behind a translucent navbar; every other page keeps the solid one.
+  const overlay = pathname === '/';
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    if (!overlay) return undefined;
+    // State only changes when the threshold is crossed, so scrolling does not re-render the navbar.
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [overlay]);
 
   // Closing on route change is handled where the route link is clicked and by MobileNavigation itself.
   return (
     <>
-      <header className="tk-header">
+      <header className="tk-header" data-overlay={overlay} data-scrolled={overlay && scrolled}>
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
           <div className="tk-header-inner">
             {/* Left: brand */}
