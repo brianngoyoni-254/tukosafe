@@ -3,9 +3,33 @@ import { useApp } from '../context/AppContext';
 import Card from '../components/ui/Card';
 import Toggle from '../components/ui/Toggle';
 import Button from '../components/ui/Button';
+import TrustCircle from '../components/TrustCircle';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 
 export default function TrustPanel() {
   const { ai, setAi, aiFail, setAiFail, flags, showToast } = useApp();
+  const { user, deleteAccount } = useAuth();
+
+  // Export everything the signed-in user can read (RLS limits this to their own data).
+  const exportData = async () => {
+    const tables = ['profiles', 'trusted_contacts', 'messages', 'notifications', 'outings', 'return_home_plans', 'sos_alerts', 'audit_log'];
+    const out = {};
+    for (const t of tables) {
+      const { data, error } = await supabase.from(t).select('*');
+      out[t] = error ? { error: error.message } : data;
+    }
+    const url = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: `tukosafe-${user.id}.json` });
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const removeAccount = async () => {
+    if (!window.confirm('Permanently delete your account and all your data? This cannot be undone.')) return;
+    const r = await deleteAccount();
+    showToast(r.ok ? 'Account deleted.' : r.error);
+  };
 
   const rows = [
     ['checkin', 'Msaidizi check-ins', 'Wording in English, Kiswahili, Sheng'],
@@ -28,6 +52,10 @@ export default function TrustPanel() {
         </div>
       </div>
       <div className="max-w-[1120px] mx-auto px-5 -mt-11 relative">
+        <div className="mb-5">
+          <h3 className="font-display font-extrabold text-xl text-ink mb-3">Your trusted circle</h3>
+          <TrustCircle />
+        </div>
         <div className="grid md:grid-cols-2 gap-5">
           <div className="space-y-3.5">
             <Card>
@@ -64,8 +92,8 @@ export default function TrustPanel() {
                 context goes to the AI: no coordinates or phone numbers.
               </div>
               <div className="flex flex-wrap gap-2.5 mt-2.5">
-                <Button variant="outline" onClick={() => showToast('Export started (simulated)')}><LuDownload size={16} /> Export my data</Button>
-                <Button variant="outline" onClick={() => showToast('Deletion requested (simulated)')}><LuTrash2 size={16} /> Delete my data</Button>
+                <Button variant="outline" onClick={() => exportData().catch((e) => showToast(e.message))}><LuDownload size={16} /> Export my data</Button>
+                <Button variant="outline" onClick={removeAccount}><LuTrash2 size={16} /> Delete my account</Button>
               </div>
             </Card>
             <Card>

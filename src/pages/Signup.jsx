@@ -26,7 +26,7 @@ function strength(pw) {
 }
 
 export default function Signup() {
-  const { signup, error, clearError } = useAuth();
+  const { signup, resendVerification, error, clearError } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -39,14 +39,41 @@ export default function Signup() {
   const pwStrength = strength(password);
   const pwPct = (pwStrength.score / 5) * 100;
 
-  const submit = (e) => {
+  const [verifyEmail, setVerifyEmail] = useState('');
+  const [resent, setResent] = useState('');
+
+  const submit = async (e) => {
     e.preventDefault();
     if (!agree) return;
     setSubmitting(true);
-    const result = signup({ name, email, phone, password });
+    const result = await signup({ name, email, phone, password });
     setSubmitting(false);
-    if (result.ok) navigate('/', { replace: true });
+    if (!result.ok) return;
+    if (result.needsVerification) setVerifyEmail(result.email);
+    else navigate('/', { replace: true });
   };
+
+  const resend = async () => {
+    const r = await resendVerification(verifyEmail);
+    setResent(r.ok ? 'Verification email sent again.' : r.error);
+  };
+
+  if (verifyEmail) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] grid place-items-center p-5 bg-[#f4f8f7]">
+        <div className="w-full max-w-[420px] bg-white rounded-2xl p-8 border border-line shadow-[0_18px_50px_rgba(7,39,36,0.1)] text-center">
+          <LuMail size={32} className="mx-auto text-teal mb-3" />
+          <h2 className="font-display font-extrabold text-2xl mb-2">Check your email</h2>
+          <p className="text-mut text-sm mb-4">
+            We sent a confirmation link to <b>{verifyEmail}</b>. Open it, then sign in.
+          </p>
+          {resent && <p className="text-sm mb-3" role="status">{resent}</p>}
+          <button type="button" onClick={resend} className="text-teal font-bold text-sm hover:underline mr-4">Resend email</button>
+          <Link to="/login" className="text-teal font-bold text-sm hover:underline">Go to sign in</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-4rem)] grid lg:grid-cols-2">
@@ -174,10 +201,10 @@ export default function Signup() {
                     autoComplete="new-password"
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); clearError(); }}
-                    placeholder="At least 6 characters"
+                    placeholder="At least 8 characters"
                     className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-line bg-white text-ink font-body text-sm focus:outline-none focus:border-teal focus:ring-2 focus:ring-teal/20 transition"
                     required
-                    minLength={6}
+                    minLength={8}
                   />
                   <button
                     type="button"
@@ -206,8 +233,8 @@ export default function Signup() {
                   className="w-[18px] h-[18px] accent-teal shrink-0 mt-0.5"
                 />
                 <span className="text-xs text-mut leading-relaxed">
-                  I understand this is a hackathon prototype. Data is stored locally in my browser
-                  and TukoSafe is not an emergency service.
+                  I understand TukoSafe notifies my trusted friends and is not an emergency service.
+                  In an emergency I will call 999 or 112.
                 </span>
               </label>
 

@@ -8,6 +8,7 @@ import {
 } from 'react-icons/lu';
 import { useAuth } from '../context/AuthContext';
 import Toast from './Toast';
+import NotificationBell from './NotificationBell';
 
 const PRIMARY_NAV = [
   { to: '/', label: 'Home', icon: LuHouse },
@@ -136,6 +137,8 @@ export default function Layout({ children }) {
                 <LuPhone size={14} />
                 999
               </a>
+
+              {isAuthenticated && <NotificationBell />}
 
               {isAuthenticated ? (
                 <div className="relative" data-user-menu>

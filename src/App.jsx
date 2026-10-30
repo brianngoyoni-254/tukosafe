@@ -16,19 +16,22 @@ import Safety from './pages/Safety';
 import About from './pages/About';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-
-// Public pages that don't need auth
-const PUBLIC_ROUTES = ['/login', '/signup', '/', '/about', '/safety', '/how'];
+import Profile from './pages/Profile';
+import { ForgotPassword, ResetPassword } from './pages/AccountRecovery';
+import { DataProvider } from './context/DataContext';
 
 export default function App() {
   return (
     <AuthProvider>
       <AppProvider>
+        <DataProvider>
         <BrowserRouter>
           <Routes>
             {/* Auth pages — no layout chrome */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Everything else uses the Layout */}
             <Route
@@ -49,6 +52,7 @@ export default function App() {
                     <Route path="/contacts" element={<RequireAuth><Contacts /></RequireAuth>} />
                     <Route path="/contact" element={<RequireAuth><ContactView /></RequireAuth>} />
                     <Route path="/trust" element={<RequireAuth><TrustPanel /></RequireAuth>} />
+                    <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
 
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
@@ -57,6 +61,7 @@ export default function App() {
             />
           </Routes>
         </BrowserRouter>
+        </DataProvider>
       </AppProvider>
     </AuthProvider>
   );

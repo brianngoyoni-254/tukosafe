@@ -14,12 +14,13 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const result = login({ email, password });
+    const result = await login({ email, password, remember });
     setSubmitting(false);
     if (result.ok) navigate(from, { replace: true });
   };
@@ -131,6 +132,7 @@ export default function Login() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label htmlFor="password" className="block text-sm font-bold">Password</label>
+                  <Link to="/forgot-password" className="text-xs font-bold text-teal hover:underline">Forgot password?</Link>
                 </div>
                 <div className="relative">
                   <LuLock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-mut pointer-events-none" />
@@ -155,6 +157,16 @@ export default function Login() {
                 </div>
               </div>
 
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                  className="w-4 h-4 accent-teal"
+                />
+                Remember me on this device
+              </label>
+
               <button
                 type="submit"
                 disabled={submitting}
@@ -174,8 +186,8 @@ export default function Login() {
           </div>
 
           <p className="text-center text-xs text-mut mt-4">
-            By signing in you agree this is a hackathon prototype.
-            Data is stored in your browser only.
+            Unchecked, you are signed out when you close the browser.
+            Checked, you stay signed in until you sign out or your session expires.
           </p>
         </div>
       </div>

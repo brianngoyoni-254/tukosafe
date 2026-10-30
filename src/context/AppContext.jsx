@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { DEMO_POSITION, USER, CONTACTS } from '../data/dummy';
+import { DEMO_POSITION, CONTACTS } from '../data/dummy';
+import { useAuth } from './AuthContext';
 import { createSupportReference } from '../lib/ai';
 import { loadOuting, saveOuting, createOuting as buildOuting } from '../lib/outingStore';
 
@@ -7,7 +8,8 @@ const AppContext = createContext(null);
 const LS_KEY = 'tukosafe.support.requests';
 
 export function AppProvider({ children }) {
-  const [user] = useState(USER);
+  const { user: authUser } = useAuth();
+  const user = authUser || { name: 'You' };
   const [lang, setLang] = useState('en');
   const [ai, setAi] = useState({ checkin: true, copilot: true, brief: true });
   const [aiFail, setAiFail] = useState(false);

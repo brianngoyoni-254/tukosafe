@@ -1,214 +1,201 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { supabase, isBackendConfigured, setRemember, getRemember } from '../lib/supabase';
 
 const AuthContext = createContext(null);
 
-const USERS_KEY = 'tukosafe.users';
-const SESSION_KEY = 'tukosafe.session';
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const NOT_CONFIGURED = 'The backend is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (see .env.example).';
 
-// Simple hash for demo purposes (NOT production-safe)
-function hashPassword(password) {
-  let hash = 0;
-  for (let i = 0; i < password.length; i++) {
-    const char = password.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return 'h_' + Math.abs(hash).toString(36) + '_' + password.length;
+function toUser(authUser, profile) {
+  if (!authUser) return null;
+  const name = profile?.display_name || authUser.user_metadata?.display_name || authUser.email?.split('@')[0] || 'You';
+  return {
+    id: authUser.id,
+    name,
+    email: authUser.email,
+    phone: profile?.phone ?? authUser.user_metadata?.phone ?? '',
+    avatar: name[0]?.toUpperCase() || 'U',
+    emailConfirmed: Boolean(authUser.email_confirmed_at),
+  };
 }
 
-function loadUsers() {
-  try {
-    return JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-  } catch {
-    return [];
-  }
-}
-
-function saveUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-
-function loadSession() {
-  try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return null;
-    const session = JSON.parse(raw);
-    // Session expires after 7 days
-    if (session.expiresAt && Date.now() > session.expiresAt) {
-      localStorage.removeItem(SESSION_KEY);
-      return null;
-    }
-    return session;
-  } catch {
-    return null;
-  }
-}
-
-function saveSession(session) {
-  if (session) {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-  } else {
-    localStorage.removeItem(SESSION_KEY);
-  }
+function friendlyAuthError(err) {
+  const msg = err?.message || 'Something went wrong. Please try again.';
+  if (/invalid login credentials/i.test(msg)) return 'Incorrect email or password.';
+  if (/email not confirmed/i.test(msg)) return 'Please verify your email first. Check your inbox for the confirmation link.';
+  if (/already registered|already been registered/i.test(msg)) return 'An account with this email already exists.';
+  if (/rate limit|too many/i.test(msg)) return 'Too many attempts. Please wait a minute and try again.';
+  if (/failed to fetch|network/i.test(msg)) return 'Network problem. Check your connection and try again.';
+  return msg;
 }
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isBackendConfigured);
   const [error, setError] = useState('');
+  const [recovery, setRecovery] = useState(false);
 
-  // Restore session on mount
-  useEffect(() => {
-    const session = loadSession();
-    if (session) {
-      const users = loadUsers();
-      const found = users.find((u) => u.id === session.userId);
-      if (found) {
-        setUser({ id: found.id, name: found.name, email: found.email, phone: found.phone, avatar: found.avatar });
-      } else {
-        saveSession(null);
-      }
-    }
-    setLoading(false);
+  const loadProfile = useCallback(async (authUser) => {
+    if (!authUser) return null;
+    const { data } = await supabase
+      .from('profiles').select('display_name, phone').eq('id', authUser.id).maybeSingle();
+    return toUser(authUser, data);
   }, []);
+
+  // Restore the persisted session and follow auth changes (refresh, sign-out in another tab, recovery link).
+  useEffect(() => {
+    if (!supabase) return undefined;
+    let active = true;
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      const u = await loadProfile(data.session?.user);
+      if (active) { setUser(u); setLoading(false); }
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') setRecovery(true);
+      if (event === 'SIGNED_OUT') { setUser(null); return; }
+      // Defer: never call Supabase from inside the callback synchronously (deadlock risk).
+      setTimeout(async () => {
+        const u = await loadProfile(session?.user);
+        if (active) setUser(u);
+      }, 0);
+    });
+
+    return () => { active = false; sub.subscription.unsubscribe(); };
+  }, [loadProfile]);
 
   const clearError = useCallback(() => setError(''), []);
 
-  const signup = useCallback(({ name, email, phone, password }) => {
+  const fail = useCallback((message) => { setError(message); return { ok: false, error: message }; }, []);
+
+  const signup = useCallback(async ({ name, email, phone, password }) => {
     setError('');
-    const trimmedEmail = email.trim().toLowerCase();
-    const trimmedName = name.trim();
+    if (!supabase) return fail(NOT_CONFIGURED);
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = name.trim();
+    if (cleanName.length < 2) return fail('Please enter your full name.');
+    if (!EMAIL_RE.test(cleanEmail)) return fail('Please enter a valid email address.');
+    if (password.length < 8) return fail('Password must be at least 8 characters.');
 
-    if (!trimmedName || trimmedName.length < 2) {
-      setError('Please enter your full name.');
-      return { ok: false };
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      setError('Please enter a valid email address.');
-      return { ok: false };
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return { ok: false };
-    }
+    const { data, error: err } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        data: { display_name: cleanName, phone: phone.trim() },
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
+    });
+    if (err) return fail(friendlyAuthError(err));
+    // With email confirmation on, Supabase returns a user but no session.
+    // An obfuscated (already registered) response has an empty identities list.
+    if (data.user && data.user.identities?.length === 0) return fail('An account with this email already exists.');
+    return { ok: true, needsVerification: !data.session, email: cleanEmail };
+  }, [fail]);
 
-    const users = loadUsers();
-    if (users.some((u) => u.email === trimmedEmail)) {
-      setError('An account with this email already exists.');
-      return { ok: false };
-    }
-
-    const newUser = {
-      id: `u_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
-      name: trimmedName,
-      email: trimmedEmail,
-      phone: phone.trim(),
-      passwordHash: hashPassword(password),
-      avatar: trimmedName[0].toUpperCase(),
-      createdAt: Date.now(),
-    };
-
-    saveUsers([...users, newUser]);
-
-    const session = {
-      userId: newUser.id,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
-    };
-    saveSession(session);
-
-    setUser({ id: newUser.id, name: newUser.name, email: newUser.email, phone: newUser.phone, avatar: newUser.avatar });
-    return { ok: true };
-  }, []);
-
-  const login = useCallback(({ email, password }) => {
+  const login = useCallback(async ({ email, password, remember = true }) => {
     setError('');
-    const trimmedEmail = email.trim().toLowerCase();
-
-    if (!trimmedEmail || !password) {
-      setError('Please enter your email and password.');
-      return { ok: false };
-    }
-
-    const users = loadUsers();
-    const found = users.find((u) => u.email === trimmedEmail);
-
-    if (!found) {
-      setError('No account found with this email.');
-      return { ok: false };
-    }
-
-    if (found.passwordHash !== hashPassword(password)) {
-      setError('Incorrect password. Please try again.');
-      return { ok: false };
-    }
-
-    const session = {
-      userId: found.id,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
-    };
-    saveSession(session);
-
-    setUser({ id: found.id, name: found.name, email: found.email, phone: found.phone, avatar: found.avatar });
+    if (!supabase) return fail(NOT_CONFIGURED);
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password) return fail('Please enter your email and password.');
+    // Choose the storage BEFORE signing in so the session lands in the right place.
+    setRemember(remember);
+    const { error: err } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+    if (err) return fail(friendlyAuthError(err));
     return { ok: true };
-  }, []);
+  }, [fail]);
 
-  const logout = useCallback(() => {
-    saveSession(null);
+  const logout = useCallback(async () => {
+    setError('');
     setUser(null);
-    setError('');
+    if (supabase) await supabase.auth.signOut();
   }, []);
 
-  const updateProfile = useCallback((updates) => {
-    if (!user) return { ok: false };
-    const users = loadUsers();
-    const idx = users.findIndex((u) => u.id === user.id);
-    if (idx === -1) return { ok: false };
+  const resendVerification = useCallback(async (email) => {
+    if (!supabase) return fail(NOT_CONFIGURED);
+    const { error: err } = await supabase.auth.resend({
+      type: 'signup', email: email.trim().toLowerCase(),
+      options: { emailRedirectTo: `${window.location.origin}/login` },
+    });
+    return err ? fail(friendlyAuthError(err)) : { ok: true };
+  }, [fail]);
 
-    const updated = { ...users[idx], ...updates };
-    if (updates.name) updated.avatar = updates.name[0].toUpperCase();
-    users[idx] = updated;
-    saveUsers(users);
+  const requestPasswordReset = useCallback(async (email) => {
+    setError('');
+    if (!supabase) return fail(NOT_CONFIGURED);
+    const cleanEmail = email.trim().toLowerCase();
+    if (!EMAIL_RE.test(cleanEmail)) return fail('Please enter a valid email address.');
+    const { error: err } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    return err ? fail(friendlyAuthError(err)) : { ok: true };
+  }, [fail]);
 
-    setUser({ id: updated.id, name: updated.name, email: updated.email, phone: updated.phone, avatar: updated.avatar });
+  const setNewPassword = useCallback(async (password) => {
+    if (!supabase) return fail(NOT_CONFIGURED);
+    if (password.length < 8) return fail('Password must be at least 8 characters.');
+    const { error: err } = await supabase.auth.updateUser({ password });
+    if (err) return fail(friendlyAuthError(err));
+    setRecovery(false);
+    return { ok: true };
+  }, [fail]);
+
+  const changePassword = useCallback(async ({ current, next }) => {
+    if (!supabase || !user) return { ok: false, error: 'Not signed in.' };
+    if (next.length < 8) return { ok: false, error: 'New password must be at least 8 characters.' };
+    // Re-authenticate with the current password first.
+    const { error: reauth } = await supabase.auth.signInWithPassword({ email: user.email, password: current });
+    if (reauth) return { ok: false, error: 'Current password is incorrect.' };
+    const { error: err } = await supabase.auth.updateUser({ password: next });
+    return err ? { ok: false, error: friendlyAuthError(err) } : { ok: true };
+  }, [user]);
+
+  const updateProfile = useCallback(async ({ name, phone }) => {
+    if (!supabase || !user) return { ok: false, error: 'Not signed in.' };
+    const cleanName = (name ?? user.name).trim();
+    if (cleanName.length < 2) return { ok: false, error: 'Please enter your full name.' };
+    const { error: err } = await supabase
+      .from('profiles').update({ display_name: cleanName, phone: (phone ?? user.phone ?? '').trim() || null })
+      .eq('id', user.id);
+    if (err) return { ok: false, error: err.message };
+    setUser((u) => ({ ...u, name: cleanName, phone: (phone ?? u.phone ?? '').trim(), avatar: cleanName[0].toUpperCase() }));
     return { ok: true };
   }, [user]);
 
-  const changePassword = useCallback(({ current, next }) => {
-    if (!user) return { ok: false, error: 'Not signed in.' };
-    const users = loadUsers();
-    const idx = users.findIndex((u) => u.id === user.id);
-    if (idx === -1) return { ok: false, error: 'Account not found.' };
-
-    if (users[idx].passwordHash !== hashPassword(current)) {
-      return { ok: false, error: 'Current password is incorrect.' };
-    }
-    if (next.length < 6) {
-      return { ok: false, error: 'New password must be at least 6 characters.' };
-    }
-
-    users[idx].passwordHash = hashPassword(next);
-    saveUsers(users);
+  const deleteAccount = useCallback(async () => {
+    if (!supabase) return { ok: false, error: NOT_CONFIGURED };
+    const { error: err } = await supabase.rpc('delete_my_account');
+    if (err) return { ok: false, error: err.message };
+    await supabase.auth.signOut();
+    setUser(null);
     return { ok: true };
-  }, [user]);
+  }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     isAuthenticated: !!user,
     loading,
     error,
+    recovery,
+    configured: isBackendConfigured,
+    rememberMe: getRemember(),
     clearError,
     signup,
     login,
     logout,
-    updateProfile,
+    resendVerification,
+    requestPasswordReset,
+    setNewPassword,
     changePassword,
-  };
+    updateProfile,
+    deleteAccount,
+  }), [user, loading, error, recovery, clearError, signup, login, logout, resendVerification,
+    requestPasswordReset, setNewPassword, changePassword, updateProfile, deleteAccount]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
