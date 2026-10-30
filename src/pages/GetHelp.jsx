@@ -6,7 +6,8 @@ import {
 import { useApp } from '../context/AppContext';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import Toggle from '../components/ui/Toggle';
+import { useData } from '../context/DataContext';
+import AlertPanel from '../components/AlertPanel';
 import SosButton from '../components/SosButton';
 import { classifyGetMeHome, draftMessage } from '../lib/ai';
 
@@ -17,7 +18,12 @@ const OPTIONS = [
 ];
 
 export default function GetHelp() {
-  const { ai, offline, setOffline, outbox, send, showToast, requestSupport } = useApp();
+  const { ai, pos, showToast, requestSupport } = useApp();
+  const { contacts, sendAlert } = useData();
+  const [recipients, setRecipients] = useState([]);
+  const [shareLoc, setShareLoc] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendResult, setSendResult] = useState('');
   const [text, setText] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -44,6 +50,20 @@ export default function GetHelp() {
     setResult(null);
     setDrafted(n);
     setMessage(draftMessage(n));
+  };
+
+  const sendHelp = async () => {
+    setSending(true);
+    setSendResult('');
+    const location = drafted === 2 && shareLoc && pos ? { lat: pos.lat, lng: pos.lng, accuracy: pos.accuracy } : null;
+    const r = await sendAlert({ kind: 'help_request', message: message.trim(), recipients, location });
+    setSending(false);
+    setSendResult(
+      r.status === 'confirmed' ? 'Request recorded. Track delivery and replies under “Your alerts”.'
+      : r.status === 'queued' ? 'No connection. Saved on this device, NOT sent yet. It will send when you are back online.'
+      : `Not sent: ${r.error}`
+    );
+    if (r.status === 'confirmed') { setDrafted(null); setMessage(''); setRecipients([]); setShareLoc(false); }
   };
 
   const handleSupport = () => {
@@ -190,34 +210,54 @@ export default function GetHelp() {
                     onChange={(e) => setMessage(e.target.value)}
                     className="w-full mt-1.5 p-2.5 rounded-lg border border-line bg-white text-ink font-body"
                   />
-                  <div className="text-mut text-xs mt-1">
-                    You edit it, you send it. {drafted === 3 && 'Transport links are simulated.'}
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    <Button onClick={() => send('Message to friend')}>Approve and send</Button>
-                    <Button variant="outline" onClick={() => { setDrafted(null); setMessage(''); }}>
-                      Cancel
-                    </Button>
-                  </div>
+                  <div className="text-mut text-xs mt-1">You edit it, you send it.</div>
+                  {drafted === 3 ? (
+                    <div className="mt-2">
+                      <p className="text-sm m-0 mb-2">
+                        A safe journey home is a real plan: you choose who is told, when you expect to arrive,
+                        and they are alerted by the server if you do not check in.
+                      </p>
+                      <Button to="/checkin">Plan my journey home</Button>
+                    </div>
+                  ) : (
+                    <>
+                      <fieldset className="border-0 p-0 mt-2 mb-0">
+                        <legend className="text-sm font-bold mb-1">Send to</legend>
+                        {!contacts.length && <p className="text-mut text-sm m-0">You have no trusted friends yet. Add one in the Trust Panel, or call 999 / 112.</p>}
+                        {contacts.map((c) => (
+                          <label key={c.id} className="flex items-center gap-2 py-0.5 text-sm cursor-pointer">
+                            <input type="checkbox" className="w-4 h-4 accent-teal" checked={recipients.includes(c.id)}
+                              onChange={(e) => setRecipients((r) => (e.target.checked ? [...r, c.id] : r.filter((x) => x !== c.id)))} />
+                            {c.name}
+                          </label>
+                        ))}
+                      </fieldset>
+                      {drafted === 2 && (
+                        <label className="flex items-start gap-2 mt-2 text-sm cursor-pointer">
+                          <input type="checkbox" className="w-4 h-4 accent-teal mt-0.5" checked={shareLoc}
+                            onChange={(e) => setShareLoc(e.target.checked)} disabled={!pos} />
+                          <span>
+                            Include my current location in this request (one-time, not live tracking).
+                            {!pos && <span className="block text-mut text-xs">Open the Live map and tap Locate me first.</span>}
+                          </span>
+                        </label>
+                      )}
+                      <div className="flex gap-2 mt-2">
+                        <Button onClick={sendHelp} disabled={!recipients.length || !message.trim() || sending}>
+                          {sending ? 'Sending…' : 'Approve and send'}
+                        </Button>
+                        <Button variant="outline" onClick={() => { setDrafted(null); setMessage(''); }}>
+                          Cancel
+                        </Button>
+                      </div>
+                      {sendResult && <p className="text-sm mt-2 mb-0" role="status">{sendResult}</p>}
+                    </>
+                  )}
                 </div>
               )}
             </Card>
 
-            <Card>
-              <div className="flex justify-between items-center gap-3 flex-wrap">
-                <div>
-                  <b>Simulate offline mode</b>
-                  <div className="text-mut text-sm">SOS and check-ins queue until you reconnect.</div>
-                </div>
-                <Toggle checked={offline} onChange={setOffline} label="Offline" />
-              </div>
-              {outbox.length > 0 && (
-                <div className="mt-2.5 text-sm">
-                  <b>Queued ({outbox.length})</b>
-                  <div className="text-mut">{outbox.join(', ')}</div>
-                </div>
-              )}
-            </Card>
+            <AlertPanel />
           </div>
 
           <Card className="text-center">
@@ -228,7 +268,10 @@ export default function GetHelp() {
               <Button variant="amber" href="tel:999">Call 999</Button>
               <Button variant="outline" href="tel:112">Call 112</Button>
             </div>
-            <p className="text-mut text-sm mt-3">Notifying friends is not dispatching responders.</p>
+            <p className="text-mut text-sm mt-3">
+              SOS notifies your trusted friends inside TukoSafe. It does <b>not</b> contact police, ambulance or any
+              emergency service. If you are in danger, call 999 or 112 yourself.
+            </p>
           </Card>
         </div>
       </div>

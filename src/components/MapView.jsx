@@ -31,8 +31,16 @@ function MapController({ pos }) {
   return null;
 }
 
-export default function MapView({ showMembers = true, height = 420 }) {
-  const { pos, members, sharing } = useApp();
+const staleIcon = new L.DivIcon({
+  className: '',
+  html: `<div style="width:14px;height:14px;border-radius:50%;background:#8a949c;border:2px dashed #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>`,
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+});
+
+// `friends` come from useSharedLocations: only people who explicitly share with the viewer.
+export default function MapView({ showMembers = true, height = 420, friends = [] }) {
+  const { pos } = useApp();
 
   // Default center: Nairobi CBD. Used until geolocation resolves.
   const defaultCenter = useMemo(() => [-1.2864, 36.8172], []);
@@ -82,25 +90,17 @@ export default function MapView({ showMembers = true, height = 420 }) {
         )}
 
         {/* Friends (only if consent + sharing on) */}
-        {showMembers &&
-          sharing &&
-          pos &&
-          members
-            .filter((m) => !m.you && m.consent)
-            .map((m) => {
-              // Convert the old east/north demo offsets into real lat/lng
-              const lat = pos.lat + m.north / 110574;
-              const lng = pos.lng + m.east / (111320 * Math.cos((pos.lat * Math.PI) / 180));
-              return (
-                <Marker key={m.id} position={[lat, lng]} icon={friendIcon}>
-                  <Popup>
-                    <b>{m.name}</b>
-                    <br />
-                    Demo position
-                  </Popup>
-                </Marker>
-              );
-            })}
+        {showMembers && friends.map((f) => (
+          <Marker key={f.id} position={[f.lat, f.lng]} icon={f.state === 'live' ? friendIcon : staleIcon}>
+            <Popup>
+              <b>{f.name}</b>
+              <br />
+              {f.state === 'live' ? 'Live' : f.state === 'stale' ? 'Stale' : 'Offline, last known position'}
+              {' · '}updated {new Date(f.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {f.accuracy != null && <><br />Accuracy ±{Math.round(f.accuracy)} m</>}
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>
 
       {/* Status chip overlay */}

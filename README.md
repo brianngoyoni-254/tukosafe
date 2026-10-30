@@ -1,16 +1,38 @@
-# React + Vite
+# TukoSafe
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Go out. Have fun. Get home safe. React 19 + Vite + Tailwind 4 frontend on a Supabase backend
+(Auth, Postgres with Row Level Security, Realtime, pg_cron).
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Create a Supabase project. Auth > Providers > Email: keep "Confirm email" on.
+   Auth > URL configuration: add your site URL (e.g. `http://localhost:5173`) and `/reset-password`.
+2. Copy `.env.example` to `.env.local` and fill in the project URL and **anon** key.
+   Never put the `service_role` key in the frontend.
+3. Apply the migrations (either way):
+   ```
+   npx supabase link --project-ref <ref>
+   npx supabase db push
+   ```
+   or paste `supabase/migrations/*.sql` in order into the SQL editor.
+4. Database > Extensions: enable `pg_cron` (the migration tries to enable it and schedules
+   `process_overdue_plans()` and `expire_stale()` every minute). Without it, overdue check-ins
+   will NOT fire when the browser is closed.
+5. `npm install && npm run dev`
 
-## React Compiler
+## Tests
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Backend (RLS + functions, three accounts, rolls back): 
+  `psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/multi_user.sql`
+  Use a local/dev database, not production.
+- Frontend: `npm run lint` and `npm run build`.
 
-## Expanding the ESLint configuration
+## Security model
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Clients only get `SELECT` (filtered by RLS). Every write goes through a `SECURITY DEFINER`
+  function that derives the user from `auth.uid()` and re-checks authorization.
+- Trusted friend != location access. Coordinates are readable only through an explicit,
+  active, unexpired `location_shares` row naming the viewer.
+- Alerts reach friends inside TukoSafe only. No SMS/email/WhatsApp/push provider is connected,
+  and the UI says so. "Delivered" means the recipient's device confirmed receipt.
+- TukoSafe does not contact emergency services. 999 / 112 are `tel:` links.

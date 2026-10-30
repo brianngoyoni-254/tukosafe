@@ -1,6 +1,9 @@
-import { useEffect, useState, useRef } from 'react';
-import { LuMapPin, LuRefreshCw, LuRadio, LuSquare, LuShare2, LuExternalLink } from 'react-icons/lu';
+import { useEffect, useState } from 'react';
+import { LuMapPin, LuRefreshCw, LuRadio, LuSquare, LuPause, LuPlay, LuExternalLink } from 'react-icons/lu';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
+import { useData } from '../context/DataContext';
+import { useSharedLocations } from '../lib/useSharedLocations';
 import MapView from '../components/MapView';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -20,22 +23,23 @@ function useCountdown(endsAt) {
   return `${m} min ${s.toString().padStart(2, '0')} s`;
 }
 
-function buildShareMessage(pos) {
-  if (!pos) return '';
-  return `I am here: ${mapsLink(pos.lat, pos.lng)} (accuracy about ${Math.round(pos.accuracy)} m, ${formatTime(pos.ts)}). Sent from TukoSafe.`;
-}
-
 export default function LiveMap() {
   const {
-    pos, locate, useDemoLocation, send,
+    pos, locate, useDemoLocation,
     live, liveEndsAt, startLive, stopLive, locating, geoError,
+    paused, setSharingPaused, myShares, lastSent, resumeSending,
   } = useApp();
+  const { user } = useAuth();
+  const { contacts } = useData();
 
-  const [draft, setDraft] = useState('');
   const [duration, setDuration] = useState(60);
+  const [picked, setPicked] = useState([]);
   const [autoTried, setAutoTried] = useState(false);
-  const lastFilledTs = useRef(0);
   const remaining = useCountdown(liveEndsAt);
+
+  const names = Object.fromEntries(contacts.map((c) => [c.id, c.name]));
+  const { people, error: sharedError } = useSharedLocations(user.id, names);
+  const sharingElsewhere = !live && myShares.some((s) => s.status === 'active' && new Date(s.expires_at) > new Date());
 
   // Auto-locate once on mount
   useEffect(() => {
@@ -44,22 +48,6 @@ export default function LiveMap() {
       locate();
     }
   }, [autoTried, pos, locate]);
-
-  // Auto-fill share message whenever position changes
-  // (first locate, live tick, or demo location).
-  useEffect(() => {
-    if (!pos) return;
-    if (pos.ts === lastFilledTs.current) return;
-    lastFilledTs.current = pos.ts;
-    setDraft(buildShareMessage(pos));
-  }, [pos]);
-
-  // Manual re-fill: rebuild the share text from current position
-  const refill = () => {
-    if (!pos) return;
-    lastFilledTs.current = pos.ts;
-    setDraft(buildShareMessage(pos));
-  };
 
   return (
     <>
@@ -81,7 +69,7 @@ export default function LiveMap() {
       <div className="max-w-[1120px] mx-auto px-5 -mt-11 relative">
         <div className="grid lg:grid-cols-[1.5fr_1fr] gap-5 items-start">
           <div>
-            <MapView height={480} />
+            <MapView height={480} friends={people} />
             <div
               className={`mt-3 p-3 rounded-lg text-sm ${geoError ? 'bg-redbg text-red' : 'bg-mint'}`}
               role="status"
@@ -127,75 +115,99 @@ export default function LiveMap() {
             </Card>
 
             <Card>
-              <b>Live updates</b>
-              <p className="text-mut text-sm mb-2">
-                The map follows you. Updates stop on their own when time is up.
+              <b>Share my live location</b>
+              <p className="text-mut text-sm mt-1 mb-2">
+                Only the friends you tick can see you, only until the time is up, and only while this page is open
+                and sending. You can stop at any moment and access ends immediately.
               </p>
-              <div className="flex gap-2 items-center mb-2">
-                <label htmlFor="dur" className="text-sm text-mut">Duration</label>
-                <select
-                  id="dur"
-                  value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
-                  disabled={live}
-                  className="p-2 rounded-lg border border-line bg-white text-sm"
-                >
-                  <option value={15}>15 minutes</option>
-                  <option value={60}>1 hour</option>
-                  <option value={240}>4 hours</option>
-                </select>
+              {!live && (
+                <>
+                  <fieldset className="border-0 p-0 m-0 mb-2">
+                    <legend className="text-sm font-bold mb-1">Who can see me</legend>
+                    {!contacts.length && <p className="text-mut text-sm m-0">Add a trusted friend in the Trust Panel first.</p>}
+                    {contacts.map((c) => (
+                      <label key={c.id} className="flex items-center gap-2 py-1 text-sm cursor-pointer">
+                        <input type="checkbox" className="w-4 h-4 accent-teal" checked={picked.includes(c.id)}
+                          onChange={(e) => setPicked((p) => (e.target.checked ? [...p, c.id] : p.filter((x) => x !== c.id)))} />
+                        {c.name}
+                      </label>
+                    ))}
+                  </fieldset>
+                  <div className="flex gap-2 items-center mb-2">
+                    <label htmlFor="dur" className="text-sm text-mut">For</label>
+                    <select id="dur" value={duration} onChange={(e) => setDuration(Number(e.target.value))}
+                      className="p-2 rounded-lg border border-line bg-white text-sm">
+                      <option value={15}>15 minutes</option>
+                      <option value={60}>1 hour</option>
+                      <option value={240}>4 hours</option>
+                      <option value={720}>12 hours</option>
+                    </select>
+                  </div>
+                  <Button onClick={() => startLive(duration, picked)} disabled={!picked.length || !('geolocation' in navigator)}>
+                    <LuRadio size={16} /> Start sharing
+                  </Button>
+                  {sharingElsewhere && (
+                    <div className="mt-3 p-2.5 rounded-lg bg-amberbg text-sm">
+                      Your location is still being shared with {myShares.length} friend{myShares.length > 1 ? 's' : ''},
+                      but this page is not sending updates.
+                      <div className="flex gap-2 mt-2">
+                        <Button size="sm" onClick={resumeSending}>Resume sending</Button>
+                        <Button size="sm" variant="outline" onClick={() => stopLive('Sharing stopped.')}>Stop sharing</Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+              {live && (
+                <div>
+                  <p className="text-sm m-0 mb-1" role="status">
+                    {paused ? 'Paused. Nobody can see you.' : `Sharing with ${myShares.length} friend${myShares.length === 1 ? '' : 's'}.`}
+                    {remaining && ` Ends in ${remaining}.`}
+                  </p>
+                  <p className="text-mut text-xs mt-0 mb-2">
+                    {lastSent ? `Last update sent ${formatTime(lastSent)}.` : 'Waiting for the first update…'}
+                  </p>
+                  <div className="flex flex-wrap gap-2.5">
+                    <Button variant="outline" onClick={() => setSharingPaused(!paused)}>
+                      {paused ? <><LuPlay size={14} /> Resume</> : <><LuPause size={14} /> Pause</>}
+                    </Button>
+                    <Button variant="danger" onClick={() => stopLive('Sharing stopped. Your friends can no longer see you.')}>
+                      <LuSquare size={14} /> Stop sharing
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <div className="mt-3">
+                <Button variant="outline" size="sm" disabled={!pos}
+                  onClick={() => window.open(mapsLink(pos.lat, pos.lng), '_blank', 'noopener')}>
+                  <LuExternalLink size={16} /> Open my position in Google Maps
+                </Button>
               </div>
-              {live ? (
-                <Button variant="outline" onClick={() => stopLive('Live updates stopped.')}>
-                  <LuSquare size={14} /> Stop live updates
-                </Button>
-              ) : (
-                <Button onClick={() => startLive(duration)} disabled={!('geolocation' in navigator)}>
-                  <LuRadio size={16} /> Start live updates
-                </Button>
-              )}
-              {live && remaining && (
-                <div className="text-mut text-xs mt-2">Ends in {remaining}</div>
-              )}
             </Card>
 
             <Card>
-              <div className="flex justify-between items-center gap-3 mb-2">
-                <b>Share this location</b>
-                {pos && (
-                  <button
-                    type="button"
-                    onClick={refill}
-                    className="inline-flex items-center gap-1 text-xs font-bold text-teal hover:underline"
-                  >
-                    <LuRefreshCw size={12} /> Refresh
-                  </button>
-                )}
-              </div>
-              <textarea
-                rows={4}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder={
-                  pos
-                    ? 'Your message is ready to send.'
-                    : 'Your location will appear here once located.'
-                }
-                aria-label="Message"
-                className="w-full mt-1 p-2.5 rounded-lg border border-line bg-white text-ink font-body text-sm"
-              />
-              <div className="flex flex-wrap gap-2.5 mt-2">
-                <Button onClick={() => send('Location shared')} disabled={!pos || !draft.trim()}>
-                  <LuShare2 size={16} /> Share
-                </Button>
-                <Button
-                  variant="outline"
-                  disabled={!pos}
-                  onClick={() => window.open(mapsLink(pos.lat, pos.lng), '_blank', 'noopener')}
-                >
-                  <LuExternalLink size={16} /> Open in Google Maps
-                </Button>
-              </div>
+              <b>Shared with you</b>
+              {sharedError && <p className="text-red text-sm mt-1" role="alert">{sharedError}</p>}
+              {!people.length && (
+                <p className="text-mut text-sm mt-1 mb-0">
+                  Nobody is sharing their location with you right now. Being trusted friends does not share location;
+                  they must choose to share.
+                </p>
+              )}
+              {people.map((p) => (
+                <div key={p.id} className="flex items-start justify-between gap-3 mt-2.5 text-sm">
+                  <div>
+                    <b>{p.name}</b>
+                    <div className="text-mut text-xs">
+                      Updated {formatTime(new Date(p.updatedAt).getTime())}
+                      {p.accuracy != null && ` · ±${Math.round(p.accuracy)} m`}
+                    </div>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${p.state === 'live' ? 'bg-greenbg text-green' : p.state === 'stale' ? 'bg-amberbg text-amber' : 'bg-line text-mut'}`}>
+                    {p.state === 'live' ? 'Live' : p.state === 'stale' ? 'Stale' : 'Offline'}
+                  </span>
+                </div>
+              ))}
             </Card>
           </div>
         </div>

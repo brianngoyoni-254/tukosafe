@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { DEMO_POSITION, CONTACTS } from '../data/dummy';
 import { useAuth } from './AuthContext';
+import * as api from '../lib/api';
 import { createSupportReference } from '../lib/ai';
 import { loadOuting, saveOuting, createOuting as buildOuting } from '../lib/outingStore';
 
@@ -29,6 +30,11 @@ export function AppProvider({ children }) {
   const [liveEndsAt, setLiveEndsAt] = useState(0);
   const [locating, setLocating] = useState(false);
   const [geoError, setGeoError] = useState(null);
+  const [paused, setPaused] = useState(false);
+  const [myShares, setMyShares] = useState([]);
+  const [lastSent, setLastSent] = useState(0);
+  const pausedRef = useRef(false);
+  const lastPush = useRef(0);
   const watchId = useRef(null);
   const tickId = useRef(null);
   const checkinTickId = useRef(null);
@@ -110,7 +116,8 @@ export function AppProvider({ children }) {
     showToast('Showing a demo location in Nairobi.');
   }, [showToast]);
 
-  const stopLive = useCallback((reason) => {
+  // Local watcher teardown only; server-side revocation is separate (see stopLive).
+  const stopWatching = useCallback(() => {
     if (watchId.current != null) {
       navigator.geolocation.clearWatch(watchId.current);
       watchId.current = null;
@@ -121,42 +128,98 @@ export function AppProvider({ children }) {
     }
     setLive(false);
     setLiveEndsAt(0);
-    if (reason) showToast(reason);
-  }, [showToast]);
+  }, []);
 
-  const startLive = useCallback((minutes = 60) => {
-    if (!('geolocation' in navigator)) {
-      showToast('Location is not supported.');
-      return;
-    }
-    if (watchId.current != null) {
-      showToast('Live updates are already on.');
-      return;
-    }
-    setGeoError(null);
-    const end = Date.now() + minutes * 60_000;
+  // Stop sharing: revoke every share on the server immediately, then stop the watcher.
+  const stopLive = useCallback(async (reason) => {
+    stopWatching();
+    setPaused(false);
+    try { await api.setShareStatus(null, 'stopped'); } catch { /* already ended */ }
+    setMyShares([]);
+    if (reason) showToast(reason);
+  }, [stopWatching, showToast]);
+
+  const refreshShares = useCallback(async () => {
+    if (!authUser) { setMyShares([]); return []; }
+    try {
+      const rows = await api.fetchMyShares(authUser.id);
+      setMyShares(rows);
+      return rows;
+    } catch { return []; }
+  }, [authUser]);
+
+  // Browser geolocation -> server, at most once every 5 s. Sends nothing while paused.
+  const startWatching = useCallback((end) => {
+    if (!('geolocation' in navigator)) { showToast('Location is not supported.'); return false; }
+    if (watchId.current != null) return true;
     setLiveEndsAt(end);
     setLive(true);
-
     watchId.current = navigator.geolocation.watchPosition(
-      (p) => setPositionFromCoords(p.coords, p.timestamp),
+      (p) => {
+        setPositionFromCoords(p.coords, p.timestamp);
+        const now = Date.now();
+        if (pausedRef.current || now - lastPush.current < 5000) return;
+        lastPush.current = now;
+        api.pushLocation(p.coords).then(() => setLastSent(now)).catch((e) => {
+          if (e.code === 'P0002') stopLive('Sharing has ended.');
+          else setGeoError('Could not send your location. Retrying…');
+        });
+      },
       (err) => {
         const msg =
-          err.code === 1
-            ? 'Location is blocked. Live updates stopped.'
-            : err.code === 2
-            ? 'Signal lost. Live updates stopped.'
-            : 'Live updates timed out.';
+          err.code === 1 ? 'Location is blocked. Sharing stopped.'
+          : err.code === 2 ? 'Signal lost. Sharing stopped.'
+          : 'Location timed out. Sharing stopped.';
         setGeoError(msg);
         stopLive(msg);
       },
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 5000 }
     );
-
     tickId.current = setInterval(() => {
-      if (Date.now() >= end) stopLive('Time is up. Live updates ended automatically.');
+      if (Date.now() >= end) stopLive('Time is up. Sharing ended automatically.');
     }, 1000);
+    return true;
   }, [setPositionFromCoords, stopLive, showToast]);
+
+  // Explicit consent: the caller names the viewers; nobody sees anything otherwise.
+  const startLive = useCallback(async (minutes = 60, viewers = []) => {
+    if (!viewers.length) { showToast('Choose who can see your location first.'); return; }
+    setGeoError(null);
+    try {
+      await api.startLocationShare(viewers, minutes);
+    } catch (e) { showToast(e.message); return; }
+    lastPush.current = 0;
+    setPaused(false);
+    if (!startWatching(Date.now() + minutes * 60_000)) {
+      await api.setShareStatus(null, 'stopped').catch(() => {});
+      return;
+    }
+    refreshShares();
+    showToast(`Sharing with ${viewers.length} friend${viewers.length > 1 ? 's' : ''}.`);
+  }, [startWatching, refreshShares, showToast]);
+
+  const setSharingPaused = useCallback(async (value) => {
+    try {
+      await api.setShareStatus(null, value ? 'paused' : 'active');
+      setPaused(value);
+      pausedRef.current = value;
+      refreshShares();
+    } catch (e) { showToast(e.message); }
+  }, [refreshShares, showToast]);
+
+  // After a reload the server may still hold an active share; offer to resume sending.
+  const resumeSending = useCallback(async () => {
+    const rows = await refreshShares();
+    const active = rows.filter((s) => s.status === 'active' && new Date(s.expires_at) > new Date());
+    if (!active.length) return;
+    const end = Math.max(...active.map((s) => new Date(s.expires_at).getTime()));
+    startWatching(end);
+  }, [refreshShares, startWatching]);
+
+  useEffect(() => { refreshShares(); }, [refreshShares]);
+  // Signing out must end local tracking immediately.
+  useEffect(() => { if (!authUser) stopWatching(); }, [authUser, stopWatching]);
+  useEffect(() => { pausedRef.current = paused; }, [paused]);
 
   useEffect(() => () => {
     if (watchId.current != null) navigator.geolocation.clearWatch(watchId.current);
@@ -372,6 +435,7 @@ export function AppProvider({ children }) {
       offline, setOffline, outbox, flags, flag, pos, locate, useDemoLocation,
       toast, showToast, send, notify, setNotify, supportRequests, requestSupport,
       live, liveEndsAt, locating, geoError, startLive, stopLive,
+      paused, setSharingPaused, myShares, lastSent, resumeSending, refreshShares,
       outing, availableContacts,
       startOuting, inviteContact, setMemberConsent, removeMember,
       leaveOuting, rejoinOuting, endSharing, restartSharing,

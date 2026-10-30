@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import * as api from '../lib/api';
+import * as alertQueue from '../lib/alertQueue';
 import { useAuth } from './AuthContext';
 import { useApp } from './AppContext';
 
@@ -81,6 +82,55 @@ export function DataProvider({ children }) {
     return () => { window.removeEventListener('online', onOnline); supabase.removeChannel(channel); };
   }, [userId, refreshAll, refreshTrust, refreshUnread]);
 
+  // ── Alerts (SOS / help requests) ──
+  const [alerts, setAlerts] = useState([]);
+  const [queue, setQueue] = useState([]);
+
+  const refreshAlerts = useCallback(async () => {
+    if (!userId) return;
+    try { setAlerts(await api.fetchAlerts()); } catch (e) { setLoadError(e.message); }
+  }, [userId]);
+
+  const syncQueue = useCallback(() => { if (userId) setQueue(alertQueue.queued(userId)); }, [userId]);
+
+  const flushQueue = useCallback(async () => {
+    if (!userId) return;
+    for (const item of alertQueue.retryable(userId)) {
+      const r = await alertQueue.attempt(item, api.createAlert);
+      if (r.network) break;
+    }
+    syncQueue();
+    refreshAlerts();
+  }, [userId, syncQueue, refreshAlerts]);
+
+  /** Create an alert. Resolves with { status: 'confirmed' | 'queued' | 'failed', error? }. */
+  const sendAlert = useCallback(async ({ kind, message, recipients = null, location = null }) => {
+    const item = { userId, clientId: crypto.randomUUID(), kind, message, recipients, location };
+    alertQueue.enqueue(item);       // persist first so a crash/offline never loses it
+    syncQueue();
+    const r = await alertQueue.attempt(item, api.createAlert);
+    syncQueue();
+    if (r.ok) { refreshAlerts(); return { status: 'confirmed', id: r.id }; }
+    return r.network ? { status: 'queued' } : { status: 'failed', error: r.error };
+  }, [userId, syncQueue, refreshAlerts]);
+
+  const dismissQueued = useCallback((clientId) => { alertQueue.remove(clientId); syncQueue(); }, [syncQueue]);
+
+  const ackAlert = useCallback(async (id) => { await api.ackAlert(id); refreshAlerts(); }, [refreshAlerts]);
+  const closeAlert = useCallback(async (id, status) => { await api.closeAlert(id, status); refreshAlerts(); }, [refreshAlerts]);
+
+  useEffect(() => {
+    if (!userId || !supabase) { setAlerts([]); setQueue([]); return undefined; }
+    syncQueue(); refreshAlerts(); flushQueue();
+    const ch = supabase.channel(`alerts:${userId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sos_alerts' }, () => refreshAlerts())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sos_recipients' }, () => refreshAlerts())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'delivery_attempts' }, () => refreshAlerts())
+      .subscribe((s) => { if (s === 'SUBSCRIBED') { refreshAlerts(); flushQueue(); } });
+    window.addEventListener('online', flushQueue);
+    return () => { window.removeEventListener('online', flushQueue); supabase.removeChannel(ch); };
+  }, [userId, syncQueue, refreshAlerts, flushQueue]);
+
   const markRead = useCallback(async (id) => {
     setNotifications((n) => n.map((x) => (x.id === id ? { ...x, read_at: x.read_at || new Date().toISOString() } : x)));
     try { await api.markNotificationRead(id); } catch { refreshNotifications(); }
@@ -104,7 +154,9 @@ export function DataProvider({ children }) {
     refreshUnread,
     markRead,
     markAllRead,
-  }), [trust, notifications, unread, realtime, loadError, refreshTrust, refreshUnread, markRead, markAllRead]);
+    alerts, queue, sendAlert, dismissQueued, flushQueue, ackAlert, closeAlert,
+  }), [trust, notifications, unread, realtime, loadError, refreshTrust, refreshUnread, markRead, markAllRead,
+    alerts, queue, sendAlert, dismissQueued, flushQueue, ackAlert, closeAlert]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
