@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LuCheck, LuTriangleAlert } from 'react-icons/lu';
 import { useApp } from '../context/AppContext';
+import { CHECKIN_TEMPLATES } from '../data/dummy';
 
 const CAPTIONS = [
   'Msaidizi checks in, in your language',
@@ -20,10 +21,8 @@ export default function PhoneMockup() {
   }, []);
 
   const greeting = ai.checkin
-    ? lang === 'sw'
-      ? 'Habari Wanjiru, umefika nyumbani salama?'
-      : 'Niaje Wanjiru, uko poa? Unaeza confirm uko sawa? Gonga marafiki wajue.'
-    : 'Check-in due: please confirm you are okay.';
+    ? CHECKIN_TEMPLATES[lang]('Wanjiru')
+    : 'Check-in due: please confirm you are okay. If something isn’t right, reply “help”.';
 
   const screens = [
     <div key="s1" className="absolute inset-0 p-5 space-y-3">
@@ -79,7 +78,6 @@ export default function PhoneMockup() {
           ))}
         </div>
       </div>
-
       <div className="flex gap-2 justify-center mt-4">
         {[0, 1, 2].map((n) => (
           <span key={n} className={`h-1.5 rounded-full transition-all ${n === i ? 'bg-amber w-11' : 'bg-white/20 w-6'}`} />
