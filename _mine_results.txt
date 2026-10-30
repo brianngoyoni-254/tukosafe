@@ -1,0 +1,30 @@
+OK   app\__init__.py
+OK   app\config.py
+OK   app\database.py
+OK   app\deps.py
+FAIL app\models.py :: PyCompileError:   File "C:\Users\User\Desktop\tukosafe\backend\tukosafe\app\models.py", line 1
+OK   app\realtime.py
+OK   app\routes\__init__.py
+OK   app\routes\admin.py
+FAIL app\routes\auth.py :: PyCompileError:   File "C:\Users\User\Desktop\tukosafe\backend\tukosafe\app\routes\auth.py", line 1
+OK   app\routes\checkins.py
+FAIL app\routes\contacts.py :: PyCompileError:   File "C:\Users\User\Desktop\tukosafe\backend\tukosafe\app\routes\contacts.py", line 1
+OK   app\routes\get_me_home.py
+OK   app\routes\health.py
+FAIL app\routes\journeys.py :: PyCompileError:   File "C:\Users\User\Desktop\tukosafe\backend\tukosafe\app\routes\journeys.py", line 1
+OK   app\routes\outings.py
+OK   app\routes\shares.py
+OK   app\routes\sos.py
+OK   app\routes\venues.py
+OK   app\security.py
+OK   app\services\__init__.py
+FAIL app\services\audit.py :: PyCompileError:   File "C:\Users\User\Desktop\tukosafe\backend\tukosafe\app\services\audit.py", line 1
+OK   app\services\geo.py
+OK   app\services\notifications.py
+FAIL app\worker.py :: PyCompileError:   File "C:\Users\User\Desktop\tukosafe\backend\tukosafe\app\worker.py", line 1
+OK   run.py
+OK   scripts\seed_demo.py
+OK   tests\__init__.py
+OK   tests\conftest.py
+OK   tests\test_flows.py
+OK   wsgi.py
