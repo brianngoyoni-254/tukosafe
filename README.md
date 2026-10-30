@@ -1,7 +1,53 @@
 # TukoSafe
 
-Go out. Have fun. Get home safe. React 19 + Vite + Tailwind 4 frontend on a Supabase backend
-(Auth, Postgres with Row Level Security, Realtime, pg_cron, one Edge Function).
+**Go out. Have fun. Get home safe.**
+
+## The problem
+
+Going out at night should be fun, but safety apps often make it stressful:
+
+- **Panic buttons trigger chaos.** One press blasts alerts to everyone with no context, so friends panic or ignore it.
+- **Location sharing never turns off.** Once you share, you're tracked indefinitely - or you forget to stop sharing.
+- **AI decides for you.** Bots auto-message responders without your approval, and you can't turn them off.
+- **One-size-fits-all look.** Bright, clinical colours that feel like a hospital, not a night out with friends.
+- **No safe way to ask for help quietly.** If you feel unsafe, there's no discreet, calm way to tell a friend.
+
+## The solution
+
+TukoSafe is a people-first safety companion built around one principle: **AI assists, people decide.**
+
+- **Quiet SOS** - press and hold to alert contacts immediately, with context so they know what to do.
+- **Opt-in, expiring sharing** - friends share location for one night only, and anyone can leave at any time.
+- **Human-centred AI** - AI only drafts and suggests. You always review, edit, and send. Every AI feature has a plain fallback.
+- **Four safe, clean colour themes** - Harbor, Grove, Coast, Ember - that blend with the shield logo and match your mood.
+- **Calm, human design** - soft edges, gentle animations, and a shield logo of hands cradling a growing tree.
+
+> From the Swahili *tuko salama* - "we are safe."
+
+TukoSafe is a prototype for looking out for friends on nights out in Kenya. Notifying friends is not dispatching responders - call 999 or 112 in an emergency.
+
+## What it does
+
+- **Create an outing** - pick friends, a time window, and a return-home plan. Sharing expires on its own.
+- **Opt-in check-ins** - friends agree to share location; anyone can leave at any time.
+- **Quiet SOS** - press and hold to alert contacts immediately; no noisy panic.
+- **Get Me Home** - send a calm, pre-approved message to friends when you're on your way back.
+- **Live map** - see where your friends are (only while they've consented and sharing is active).
+- **Trust Panel** - see who has consented, who's joined, and who's been told first.
+- **Safety resources** - emergency numbers (999, 112, 1195, 116) and a before-you-go checklist.
+
+## Design
+
+TukoSafe is built to feel safe, clean, and human - a direct answer to the problems above:
+
+- **Four colour themes** that blend with the shield logo - Harbor (deep blue trust), Grove (forest green safe haven), Coast (teal calm), Ember (warm terracotta connection). Pick one in the theme dropdown; your choice is remembered.
+- **Logo** - a protection shield with two hands cradling a growing tree, used across the header, footer, mobile dock, and browser tab.
+- **Human-centred AI** - AI only drafts and suggests; you always review, edit, and send. Every AI feature has a plain fallback, so help is never blocked by AI being off.
+- **Safety first** - SOS red stays red regardless of theme. Notifying friends is not dispatching responders; this is a prototype, not an emergency service.
+
+## Tech stack
+
+React 19 + Vite + Tailwind 4 frontend on a Supabase backend (Auth, Postgres with Row Level Security, Realtime, pg_cron, one Edge Function).
 
 ## Setup
 

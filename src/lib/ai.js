@@ -110,7 +110,7 @@ export function buildSituationBrief(facts, { aiEnabled = true, aiFail = false } 
   // Simulated failure mode (used by Trust Panel test)
   if (aiFail) text = text.replace(facts.location, 'Kilimani');
 
-  // Validator — every fact must appear verbatim
+  // Validator - every fact must appear verbatim
   const required = [
     facts.name,
     facts.location,

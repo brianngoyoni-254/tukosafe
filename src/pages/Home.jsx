@@ -97,7 +97,7 @@ function MarketingHome() {
         <div className="text-center text-mut text-sm mt-5">
           Need emergency services?{' '}
           <a href="tel:999" className="font-bold text-ink">Call 999</a>{' '}
-          <a href="tel:112" className="font-bold text-ink">Call 112</a> — Notifying friends is not dispatching responders.
+          <a href="tel:112" className="font-bold text-ink">Call 112</a> - Notifying friends is not dispatching responders.
         </div>
       </div>
 
