@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 
 const METERS_PER_PIXEL = 2;
 
@@ -63,7 +63,7 @@ export default function MapView({ showMembers = true }) {
   return (
     <div className="relative rounded-2xl overflow-hidden border border-line bg-mapbg aspect-[4/3]">
       <div className="absolute left-3 top-3 flex gap-1.5 flex-wrap z-10">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${pos ? 'bg-greenbg text-green' : 'bg-line text-mut'}`}>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${pos ? 'bg-safebg text-safe' : 'bg-line text-mut'}`}>
           {pos ? 'Located' : 'Not located'}
         </span>
       </div>

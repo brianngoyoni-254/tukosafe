@@ -7,12 +7,12 @@ export default function About() {
     <>
       <div className="relative overflow-hidden bg-deep text-white pt-11 pb-20">
         <div className="max-w-[1120px] mx-auto px-5 relative">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-[#bfe0da] text-sm mb-3">
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-white/90 text-sm mb-3">
             <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
             About TukoSafe
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">Tuko salama. We are safe.</h2>
-          <p className="text-[#bfe0da] max-w-[58ch] m-0">
+          <p className="text-white/90 max-w-[58ch] m-0">
             TukoSafe comes from the Swahili <i>tuko salama</i>. It helps friends in Kenya look out for each other on nights out.
           </p>
         </div>
@@ -44,7 +44,7 @@ export default function About() {
         <div className="mt-10 bg-deep text-white rounded-3xl p-6 md:p-11 grid md:grid-cols-[1.2fr_1fr] gap-7 items-center">
           <div>
             <h2 className="font-display font-extrabold text-[clamp(1.6rem,3.5vw,2.3rem)] mb-1.5">Hard limits</h2>
-            <ul className="list-disc pl-5 text-[#bfe0da] text-sm space-y-1 m-0">
+            <ul className="list-disc pl-5 text-white/90 text-sm space-y-1 m-0">
               <li>AI never contacts responders.</li>
               <li>AI never labels anyone missing or in danger.</li>
               <li>AI never starts or extends sharing.</li>

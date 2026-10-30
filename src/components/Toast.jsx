@@ -1,4 +1,4 @@
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 
 export default function Toast() {
   const { toast } = useApp();

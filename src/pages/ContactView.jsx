@@ -1,5 +1,5 @@
 import { LuTriangleAlert, LuPhone, LuSiren, LuFlag } from 'react-icons/lu';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Chip from '../components/ui/Chip';
@@ -49,12 +49,12 @@ export default function ContactView() {
     <>
       <div className="relative overflow-hidden bg-deep text-white pt-11 pb-20">
         <div className="max-w-[1120px] mx-auto px-5 relative">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-[#bfe0da] text-sm mb-3">
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-white/90 text-sm mb-3">
             <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
             Contact view
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">What your friend sees</h2>
-          <p className="text-[#bfe0da] max-w-[58ch] m-0">
+          <p className="text-white/90 max-w-[58ch] m-0">
             The brief a trusted friend gets when you miss a check-in or press SOS.
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function ContactView() {
             <Chip tone="y"><LuTriangleAlert size={12} /> Verify safety</Chip>
             <p className="mt-2.5 leading-relaxed">{brief.text}</p>
             {brief.ai ? (
-              <span className="inline-block px-2 py-0.5 rounded-md bg-mint text-teal text-xs font-bold">
+              <span className="inline-block px-2 py-0.5 rounded-md bg-accentbg text-accent text-xs font-bold">
                 AI-drafted from the facts shown
               </span>
             ) : (
@@ -74,7 +74,7 @@ export default function ContactView() {
                 <div className="text-mut text-sm mt-1">{brief.why}</div>
               </>
             )}
-            <div className="text-sm text-mut border-l-[3px] border-teal2 pl-2.5 my-2.5">
+            <div className="text-sm text-mut border-l-[3px] border-accent pl-2.5 my-2.5">
               Based on: last location {AI_FACTS.lastLocationTime}, {AI_FACTS.lastLocationLabel}; battery{' '}
               {AI_FACTS.battery}%; usual trip {AI_FACTS.usualTripMinutes} min. Generated just now. Status is not a guarantee.
             </div>

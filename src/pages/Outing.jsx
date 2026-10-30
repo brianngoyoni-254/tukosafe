@@ -1,5 +1,5 @@
-import { LuCheck, LuClock, LuTriangleAlert, LuUserCheck } from 'react-icons/lu';
-import { useApp } from '../context/AppContext';
+import { LuCheck, LuClock, LuTriangleAlert } from 'react-icons/lu';
+import { useApp } from '../context/app-context';
 import MapView from '../components/MapView';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -23,12 +23,12 @@ export default function Outing() {
     <>
       <div className="relative overflow-hidden bg-deep text-white pt-11 pb-20">
         <div className="max-w-[1120px] mx-auto px-5 relative">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-[#bfe0da] text-sm mb-3">
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-white/90 text-sm mb-3">
             <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
             Outing Circle
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">Opt in for one night</h2>
-          <p className="text-[#bfe0da] max-w-[58ch] m-0">
+          <p className="text-white/90 max-w-[58ch] m-0">
             Sharing is per outing, visible to named friends, and ends on its own.
           </p>
         </div>
@@ -51,7 +51,7 @@ export default function Outing() {
               {members.map((m) => (
                 <div key={m.id} className="flex items-center justify-between gap-3 py-2.5 border-t border-line first:border-0">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-teal text-white grid place-items-center font-bold">
+                    <div className="w-9 h-9 rounded-full bg-accent text-white grid place-items-center font-bold">
                       {m.name[0]}
                     </div>
                     <div>

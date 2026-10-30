@@ -1,9 +1,23 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { AppContext } from './app-context';
 import { OUTING, MEMBERS, DEMO_POSITION, USER } from '../data/dummy';
 
-const AppContext = createContext(null);
+const STORAGE_KEY = 'tukosafe:theme';
+const DEFAULT_THEME = 'harbor';
+const INITIAL_EXPIRES_AT = Date.now() + OUTING.expiresInHours * 3_600_000;
+
+function loadTheme() {
+  try {
+    const t = localStorage.getItem(STORAGE_KEY);
+    if (t && ['harbor', 'grove', 'coast', 'ember'].includes(t)) return t;
+  } catch {
+    // ignore
+  }
+  return DEFAULT_THEME;
+}
 
 export function AppProvider({ children }) {
+  const [theme, setThemeState] = useState(loadTheme);
   const [user] = useState(USER);
   const [lang, setLang] = useState('en');
   const [ai, setAi] = useState({ checkin: true, copilot: true, brief: true });
@@ -12,8 +26,8 @@ export function AppProvider({ children }) {
   const [sos, setSos] = useState(false);
   const [members, setMembers] = useState(MEMBERS);
   const [sharing, setSharing] = useState(true);
-  const [expiresAt, setExpiresAt] = useState(Date.now() + OUTING.expiresInHours * 3_600_000);
-  const [offline, setOffline] = useState(false);
+  const [expiresAt, setExpiresAt] = useState(INITIAL_EXPIRES_AT);
+  const [offline, setOfflineState] = useState(false);
   const [outbox, setOutbox] = useState([]);
   const [flags, setFlags] = useState([]);
   const [pos, setPos] = useState(null);
@@ -23,6 +37,18 @@ export function AppProvider({ children }) {
   const showToast = useCallback((msg) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2800);
+  }, []);
+
+  const setOffline = useCallback((nextOffline) => {
+    setOfflineState(nextOffline);
+    if (!nextOffline && outbox.length) {
+      showToast(`Back online. Sent ${outbox.length} queued item(s).`);
+      setOutbox([]);
+    }
+  }, [outbox.length, showToast]);
+
+  const setTheme = useCallback((next) => {
+    setThemeState(next);
   }, []);
 
   const send = useCallback(
@@ -38,11 +64,22 @@ export function AppProvider({ children }) {
   );
 
   useEffect(() => {
-    if (!offline && outbox.length) {
-      showToast(`Back online. Sent ${outbox.length} queued item(s).`);
-      setOutbox([]);
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem(STORAGE_KEY, theme);
+    } catch {
+      // ignore
     }
-  }, [offline, outbox.length, showToast]);
+  }, [theme]);
+
+  useEffect(() => {
+    if (!sharing) return undefined;
+    const timeout = window.setTimeout(
+      () => setSharing(false),
+      Math.max(0, expiresAt - Date.now())
+    );
+    return () => window.clearTimeout(timeout);
+  }, [sharing, expiresAt]);
 
   const locate = useCallback(() => {
     if (!('geolocation' in navigator)) {
@@ -76,6 +113,7 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider
       value={{
+        theme, setTheme,
         user, lang, setLang, ai, setAi, aiFail, setAiFail, step, setStep, sos, setSos,
         members, setMembers, sharing, setSharing, expiresAt, setExpiresAt, offline, setOffline,
         outbox, flags, flag, pos, locate, useDemoLocation, toast, showToast, send, notify, setNotify,
@@ -84,10 +122,4 @@ export function AppProvider({ children }) {
       {children}
     </AppContext.Provider>
   );
-}
-
-export function useApp() {
-  const ctx = useContext(AppContext);
-  if (!ctx) throw new Error('useApp must be used inside AppProvider');
-  return ctx;
 }

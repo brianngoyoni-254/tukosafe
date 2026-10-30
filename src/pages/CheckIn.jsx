@@ -1,5 +1,5 @@
 import { LuCheck } from 'react-icons/lu';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 import CheckinStepper from '../components/CheckinStepper';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -15,14 +15,14 @@ export default function CheckIn() {
     <>
       <div className="relative overflow-hidden bg-deep text-white pt-11 pb-20">
         <div className="max-w-[1120px] mx-auto px-5 relative">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-[#bfe0da] text-sm mb-3">
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-white/90 text-sm mb-3">
             <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
             Msaidizi check-ins
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">
             A calm check-in, in your language
           </h2>
-          <p className="text-[#bfe0da] max-w-[58ch] m-0">
+          <p className="text-white/90 max-w-[58ch] m-0">
             English, Kiswahili or Sheng. A tap answers. Timers are never controlled by AI.
           </p>
         </div>
@@ -79,7 +79,7 @@ export default function CheckIn() {
                   <>
                     <h4 className="font-display font-extrabold text-base m-0">Msaidizi</h4>
                     <div className="bg-white border border-line rounded-[14px_14px_14px_4px] p-3 text-sm">{template}</div>
-                    <div className="ml-auto w-fit max-w-[80%] bg-teal text-white rounded-[16px_16px_4px_16px] px-3 py-2 text-sm">
+                    <div className="ml-auto w-fit max-w-[80%] bg-accent text-white rounded-[16px_16px_4px_16px] px-3 py-2 text-sm">
                       I’m okay ✓
                     </div>
                     <Chip tone="g">Friends told</Chip>
@@ -91,7 +91,7 @@ export default function CheckIn() {
                     <div className="bg-white border border-line rounded-[14px] p-3 text-sm mt-2">
                       The grace period ended. Brian received a calm brief with your last known location.
                     </div>
-                    <button className="w-full py-3 rounded-xl bg-teal text-white font-bold text-sm">I’m okay ✓</button>
+                    <button className="w-full py-3 rounded-xl bg-accent text-white font-bold text-sm">I’m okay ✓</button>
                   </>
                 ) : (
                   <>
@@ -105,7 +105,7 @@ export default function CheckIn() {
                         <div className="h-full bg-amber animate-[fill_4s_linear_infinite]" />
                       </div>
                     )}
-                    <button className="w-full py-3 rounded-xl bg-teal text-white font-bold text-sm">I’m okay ✓</button>
+                    <button className="w-full py-3 rounded-xl bg-accent text-white font-bold text-sm">I’m okay ✓</button>
                   </>
                 )}
               </div>
