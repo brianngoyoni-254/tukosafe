@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { LuMapPin, LuRefreshCw, LuRadio, LuSquare, LuShare2, LuExternalLink } from 'react-icons/lu';
 import { useApp } from '../context/AppContext';
 import MapView from '../components/MapView';
@@ -20,6 +20,11 @@ function useCountdown(endsAt) {
   return `${m} min ${s.toString().padStart(2, '0')} s`;
 }
 
+function buildShareMessage(pos) {
+  if (!pos) return '';
+  return `I am here: ${mapsLink(pos.lat, pos.lng)} (accuracy about ${Math.round(pos.accuracy)} m, ${formatTime(pos.ts)}). Sent from TukoSafe.`;
+}
+
 export default function LiveMap() {
   const {
     pos, locate, useDemoLocation, send,
@@ -29,6 +34,7 @@ export default function LiveMap() {
   const [draft, setDraft] = useState('');
   const [duration, setDuration] = useState(60);
   const [autoTried, setAutoTried] = useState(false);
+  const lastFilledTs = useRef(0);
   const remaining = useCountdown(liveEndsAt);
 
   // Auto-locate once on mount
@@ -39,11 +45,20 @@ export default function LiveMap() {
     }
   }, [autoTried, pos, locate]);
 
-  const generateDraft = () => {
+  // Auto-fill share message whenever position changes
+  // (first locate, live tick, or demo location).
+  useEffect(() => {
     if (!pos) return;
-    setDraft(
-      `I am here: ${mapsLink(pos.lat, pos.lng)} (accuracy about ${Math.round(pos.accuracy)} m, ${formatTime(pos.ts)}). Sent from TukoSafe.`
-    );
+    if (pos.ts === lastFilledTs.current) return;
+    lastFilledTs.current = pos.ts;
+    setDraft(buildShareMessage(pos));
+  }, [pos]);
+
+  // Manual re-fill: rebuild the share text from current position
+  const refill = () => {
+    if (!pos) return;
+    lastFilledTs.current = pos.ts;
+    setDraft(buildShareMessage(pos));
   };
 
   return (
@@ -62,6 +77,7 @@ export default function LiveMap() {
           </p>
         </div>
       </div>
+
       <div className="max-w-[1120px] mx-auto px-5 -mt-11 relative">
         <div className="grid lg:grid-cols-[1.5fr_1fr] gap-5 items-start">
           <div>
@@ -77,10 +93,11 @@ export default function LiveMap() {
                 : pos
                 ? live
                   ? `Live updates on. Updating every few seconds. Ends in ${remaining || '…'}.`
-                  : 'Located. Nothing has been shared yet.'
+                  : 'Located. Your share message is ready below.'
                 : 'Press “Locate me” to find your position.'}
             </div>
           </div>
+
           <div className="space-y-3.5">
             <Card>
               <div className="flex justify-between items-center gap-3 flex-wrap mb-3">
@@ -143,17 +160,33 @@ export default function LiveMap() {
             </Card>
 
             <Card>
-              <b>Share this location</b>
+              <div className="flex justify-between items-center gap-3 mb-2">
+                <b>Share this location</b>
+                {pos && (
+                  <button
+                    type="button"
+                    onClick={refill}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-teal hover:underline"
+                  >
+                    <LuRefreshCw size={12} /> Refresh
+                  </button>
+                )}
+              </div>
               <textarea
-                rows={3}
+                rows={4}
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
+                placeholder={
+                  pos
+                    ? 'Your message is ready to send.'
+                    : 'Your location will appear here once located.'
+                }
                 aria-label="Message"
-                className="w-full mt-2 p-2.5 rounded-lg border border-line bg-white text-ink font-body"
+                className="w-full mt-1 p-2.5 rounded-lg border border-line bg-white text-ink font-body text-sm"
               />
               <div className="flex flex-wrap gap-2.5 mt-2">
-                <Button onClick={generateDraft} disabled={!pos}>
-                  <LuShare2 size={16} /> Draft message
+                <Button onClick={() => send('Location shared')} disabled={!pos || !draft.trim()}>
+                  <LuShare2 size={16} /> Share
                 </Button>
                 <Button
                   variant="outline"
