@@ -4,7 +4,7 @@
 .phone-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
 
 .phone {
-  --w: clamp(240px, 26vw, 300px);
+  --w: clamp(240px, 21vw, 284px);
   position: relative;
   width: var(--w);
   font-size: calc(var(--w) / 21);
@@ -111,7 +111,10 @@
   padding: 0.85em 1em; border: 0; border-radius: 1.1em; cursor: default;
   background: var(--color-accent); color: #fff; font: 700 0.95em var(--font-body);
   box-shadow: 0 0.35em 0.8em -0.2em color-mix(in srgb, var(--color-accent) 60%, transparent);
-  animation: tap 2.4s ease-in-out infinite;
+  animation: phone-glow 2.6s ease-in-out infinite;   /* glow only: the button never moves or resizes */
+}
+@keyframes phone-glow {
+  50% { box-shadow: 0 0.35em 0.8em -0.2em color-mix(in srgb, var(--color-accent) 60%, transparent), 0 0 0 0.35em color-mix(in srgb, var(--color-accent) 22%, transparent); }
 }
 .phone-cta svg { width: 1.15em; height: 1.15em; }
 .phone-cta-ghost {
@@ -144,13 +147,21 @@
     radial-gradient(120% 45% at 50% -8%, rgba(255,255,255,.14), transparent 60%);
 }
 
-.phone-dots { display: flex; gap: 0.6rem; justify-content: center; margin-top: 2rem; }
-.phone-dots button {
-  position: relative; width: 1.5rem; height: 0.4rem; padding: 0; border: 0; border-radius: 999px; cursor: pointer;
-  background: rgba(255,255,255,.28); transition: width .3s ease, background-color .3s ease;
+.phone-controls { display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-top: 2rem; }
+.phone-arrow {
+  width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: 999px; cursor: pointer;
+  color: rgba(255,255,255,.85); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
+  transition: background-color .2s ease, color .2s ease;
 }
-.phone-dots button::before { content: ''; position: absolute; inset: -0.7rem -0.25rem; }  /* larger tap target */
-.phone-dots button.on { width: 2.75rem; background: var(--color-amber); }
+.phone-arrow:hover { background: rgba(255,255,255,.14); color: #fff; }
+.phone-arrow svg { width: 1.2rem; height: 1.2rem; }
+.phone-dots { display: flex; gap: 0.6rem; align-items: center; justify-content: center; }
+.phone-dots button {
+  position: relative; width: 0.5rem; height: 0.5rem; padding: 0; border: 0; border-radius: 999px; cursor: pointer;
+  background: #6d8497; transition: width .3s ease, background-color .3s ease;   /* muted blue-grey */
+}
+.phone-dots button::before { content: ''; position: absolute; inset: -0.85rem -0.4rem; }  /* larger tap target */
+.phone-dots button.on { width: 1.75rem; background: var(--color-amber); }
 .phone-caption { text-align: center; color: rgba(255,255,255,.9); font-size: 0.875rem; margin: 0.6rem 0 0; min-height: 1.5em; }
 
 @media (prefers-reduced-motion: reduce) {

@@ -2,8 +2,9 @@ import { Link } from 'react-router-dom';
 import { LuHouse, LuCircleAlert, LuUsers, LuMap, LuMessageCircle, LuShieldCheck, LuCompass } from 'react-icons/lu';
 import { useAuth } from '../context/AuthContext';
 import Dashboard from './Dashboard';
+import './home.css';
 import Button from '../components/ui/Button';
-import PhoneMockup from '../components/PhoneMockup';
+import PhoneSlideshow from '../components/phone/PhoneSlideshow';
 
 const ACTIONS = [
   { to: '/help', icon: LuCircleAlert, title: 'SOS demo', desc: 'Press and hold to preview an alert. Nothing is sent.', cls: 'bg-red border-red text-white', descCls: 'text-[#ffe3df]' },
@@ -29,14 +30,15 @@ export default function Home() {
 function MarketingHome() {
   return (
     <>
-      <section className="relative overflow-hidden bg-deep text-white pt-14 pb-32">
-        <div className="max-w-[1120px] mx-auto px-5 grid md:grid-cols-[1.05fr_.95fr] gap-10 items-center">
+      <section className="relative overflow-hidden bg-deep text-white pt-8 md:pt-12 pb-28 md:pb-32 -mt-px">
+        <div className="hero-glow" aria-hidden="true" />
+        <div className="relative max-w-[1120px] mx-auto px-5 grid md:grid-cols-[1.05fr_.95fr] gap-8 md:gap-10 items-center">
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-white/90 text-sm mb-5">
               <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
               Safety companion prototype · AI concepts previewed
             </div>
-            <h1 className="font-display font-extrabold text-[clamp(2.7rem,6.6vw,5rem)] leading-[1.05] mb-4">
+            <h1 className="font-display font-extrabold text-[clamp(2.5rem,5.2vw,4.1rem)] leading-[1.05] mb-6">
               <span className="block opacity-0 translate-y-5 animate-[up_.8s_cubic-bezier(.2,.7,.2,1)_forwards]">Go out.</span>
               <span className="block opacity-0 translate-y-5 animate-[up_.8s_cubic-bezier(.2,.7,.2,1)_.18s_forwards]">Have fun.</span>
               <span className="block text-amber opacity-0 translate-y-5 animate-[up_.8s_cubic-bezier(.2,.7,.2,1)_.36s_forwards]">Get home safe.</span>
@@ -59,7 +61,7 @@ function MarketingHome() {
                 <LuMap size={18} /> Preview my location
               </Button>
             </div>
-            <p className="mt-4 text-mut/80 text-sm">
+            <p className="mt-4 text-white/75 text-sm">
               TukoSafe is not an emergency service. In an emergency call{' '}
               <a className="text-white font-bold" href="tel:999">999</a> or{' '}
               <a className="text-white font-bold" href="tel:112">112</a>.
@@ -75,7 +77,7 @@ function MarketingHome() {
               <span className="absolute inset-0 rounded-full border border-accent/15 animate-[pulse-ring_6s_ease-out_infinite_4s]" />
             </div>
             <div className="relative z-10 w-full">
-              <PhoneMockup />
+              <PhoneSlideshow />
             </div>
           </div>
         </div>
