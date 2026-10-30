@@ -7,7 +7,15 @@ const AppContext = createContext(null);
 const LS_KEY = 'tukosafe.support.requests';
 
 export function AppProvider({ children }) {
-  const [theme, setThemeState] = useState(loadTheme);
+  const [theme, setThemeState] = useState(() => {
+    try {
+      const t = localStorage.getItem('tukosafe:theme');
+      if (t && ['harbor', 'grove', 'coast', 'ember'].includes(t)) return t;
+    } catch {
+      // ignore
+    }
+    return 'harbor';
+  });
   const [user] = useState(USER);
   const [lang, setLang] = useState('en');
   const [ai, setAi] = useState({ checkin: true, copilot: true, brief: true });
@@ -61,7 +69,7 @@ export function AppProvider({ children }) {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     try {
-      localStorage.setItem(STORAGE_KEY, theme);
+      localStorage.setItem('tukosafe:theme', theme);
     } catch {
       // ignore
     }

@@ -268,7 +268,7 @@ export default function CheckIn() {
                       {template}
                     </div>
                     <Chip tone={ai.checkin ? 'default' : 'y'}>
-                      {ai.checkin ? 'AI-drafted' : 'Template (AI off)'}
+                      {ai.checkin ? 'Scripted example' : 'Fallback example'}
                     </Chip>
 
                     {checkin?.state === 'grace' && (

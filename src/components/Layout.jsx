@@ -29,7 +29,7 @@ const SECONDARY_NAV = [
 function ThemeSelector({ theme, setTheme }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="relative inline-block" onMouseLeave={() => setOpen(false)}>
+    <div className="relative inline-block">
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -44,7 +44,7 @@ function ThemeSelector({ theme, setTheme }) {
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="opacity-90 shrink-0"><polyline points="6 9 12 15 18 9" /></svg>
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-48 rounded-xl border border-white/20 bg-white/10 p-1 shadow-2xl backdrop-blur-md">
+        <div className="absolute right-0 mt-[-1px] w-48 rounded-xl border border-white/20 bg-white/10 p-1 shadow-2xl backdrop-blur-md" onMouseLeave={() => setOpen(false)}>
           {THEMES.map((t) => (
             <button key={t.id} onClick={() => { setTheme(t.id); setOpen(false); }} className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-[#bfe0da] hover:bg-white/20 hover:text-white no-underline transition-colors ${theme === t.id ? 'bg-white/20 text-white font-semibold' : ''}`}>
               <span className="w-6 h-6 rounded-full border border-white/30 shrink-0" style={{ backgroundColor: THEME_MARK[t.id] }} />

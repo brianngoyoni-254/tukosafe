@@ -67,13 +67,13 @@ export default function LiveMap() {
         <div className="max-w-[1120px] mx-auto px-5 relative">
           <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-white/90 text-sm mb-3">
             <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
-            Live map
+            Location preview
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">
             Where you are, on your terms
           </h2>
           <p className="text-white/90 max-w-[58ch] m-0">
-            The map finds you automatically. Your position stays in this browser until you choose to share it.
+            Request a single browser location fix or use demo data. The map is illustrative; live tracking is not connected.
           </p>
         </div>
       </div>

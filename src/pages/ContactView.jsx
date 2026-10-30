@@ -16,8 +16,8 @@ export default function ContactView() {
         <Card className="border-red max-w-[620px]">
           <Chip tone="r"><LuSiren size={12} /> SOS</Chip>
           <p className="mt-2.5">
-            {AI_FACTS.name} has requested urgent help. Last location shared at {AI_FACTS.lastLocationTime}.
-            Call {AI_FACTS.name} now. If you believe {AI_FACTS.name} is in danger, call 999 or 112.
+            {AI_FACTS.name} triggered the SOS demo. The sample location time is {AI_FACTS.lastLocationTime}; no alert was delivered.
+            If you believe someone is in danger, call 999 or 112.
           </p>
           <div className="flex flex-wrap gap-2.5">
             <Button href="tel:+254700000000"><LuPhone size={16} /> Call {AI_FACTS.name}</Button>
@@ -35,9 +35,9 @@ export default function ContactView() {
         <Card className="max-w-[620px]">
           <Chip tone="g">No alert</Chip>
           <p className="text-mut mt-2.5">
-            Brian sees an alert here when {AI_FACTS.name} misses a check-in or presses SOS.
+            This preview shows the sample alert after you advance the demo. No contact is notified.
           </p>
-          <Button onClick={() => setStep(3)}>Skip to alert</Button>
+          <Button onClick={() => setStep(3)}>Preview sample alert</Button>
         </Card>
       </div>
     );
@@ -77,7 +77,7 @@ export default function ContactView() {
             <p className="mt-2.5 leading-relaxed">{brief.text}</p>
             {brief.ai ? (
               <span className="inline-block px-2 py-0.5 rounded-md bg-accentbg text-accent text-xs font-bold">
-                AI-drafted from the facts shown
+                Scripted sample from the facts shown
               </span>
             ) : (
               <>
@@ -89,7 +89,7 @@ export default function ContactView() {
             )}
             <div className="text-sm text-mut border-l-[3px] border-accent pl-2.5 my-2.5">
               Based on: last location {AI_FACTS.lastLocationTime}, {AI_FACTS.lastLocationLabel}; battery{' '}
-              {AI_FACTS.battery}%; usual trip {AI_FACTS.usualTripMinutes} min. Generated just now. Status is not a guarantee.
+              {AI_FACTS.battery}%; usual trip {AI_FACTS.usualTripMinutes} min. Fixed sample data; status is not a guarantee.
             </div>
             <div className="flex flex-wrap gap-2.5">
               <Button href="tel:+254700000000"><LuPhone size={16} /> Call {AI_FACTS.name}</Button>

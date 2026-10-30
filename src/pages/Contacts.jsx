@@ -104,8 +104,8 @@ export default function Contacts() {
             <Card>
               <b>What your friends can see</b>
               <p className="text-mut text-sm mt-1">
-                Your status and last known location, only during an outing and only until sharing ends.
-                Anyone can leave any time. Nothing is shared with responders.
+                The demo previews status and sample locations during an outing. No location is shared with contacts.
+                Consent and removal controls change local demo state only.
               </p>
             </Card>
             <Button to="/outing" variant="outline">Back to the outing</Button>
