@@ -50,6 +50,25 @@ export default function GetHelp() {
     requestSupport({ context: 'get_me_home', userMessage: text });
   };
 
+  const handleTextChange = (value) => {
+    setText(value);
+    if (!value.trim()) {
+      setResult(null);
+      setDrafted(null);
+      setMessage('');
+      return;
+    }
+
+    setResult({
+      option: 2,
+      confidence: 'high',
+      source: 'autofill',
+      reasoning: 'Your message is ready as a request for help.',
+    });
+    setDrafted(2);
+    setMessage(`${draftMessage(2)} Details: ${value.trim()}`);
+  };
+
   const lowConfidence =
     result && (result.option === 0 || result.confidence === 'low' || result.supportAvailable);
 
@@ -76,16 +95,16 @@ export default function GetHelp() {
             <Card>
               <h3 className="font-display font-extrabold text-lg m-0 mb-1">Get Me Home</h3>
               <label htmlFor="gt" className="text-mut text-sm">
-                Describe it in a few words — any language, any phrase.
+                Type anything about what’s happening. We’ll prepare a request for help automatically.
               </label>
               <div className="flex gap-2 mt-1.5">
                 <input
                   id="gt"
                   type="text"
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => handleTextChange(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && askAI()}
-                  placeholder='e.g. "si poa hapa", "nataka nyumbani", "help me"'
+                  placeholder="What’s happening?"
                   className="flex-1 p-2.5 rounded-lg border border-line bg-white text-ink font-body"
                 />
                 <Button onClick={askAI} disabled={loading}>
@@ -99,7 +118,7 @@ export default function GetHelp() {
                 <div className="mt-3 p-3 rounded-lg bg-mint border border-teal2">
                   <div className="flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white text-teal text-xs font-bold">
-                      <LuCircleCheck size={12} /> AI suggestion
+                      <LuCircleCheck size={12} /> {result.source === 'autofill' ? 'Help request ready' : 'AI suggestion'}
                     </span>
                     <button
                       onClick={() => { setResult(null); setDrafted(null); }}
@@ -110,7 +129,9 @@ export default function GetHelp() {
                     </button>
                   </div>
                   <p className="mt-1.5 mb-0 font-bold">
-                    Option {result.option} — {OPTIONS.find((o) => o.n === result.option)?.label}
+                    {result.source === 'autofill'
+                      ? 'It sounds like you need help.'
+                      : `Option ${result.option} — ${OPTIONS.find((o) => o.n === result.option)?.label}`}
                   </p>
                   <p className="text-mut text-xs mt-1 mb-0">{result.reasoning}</p>
                   {result.matchedPhrase && (
