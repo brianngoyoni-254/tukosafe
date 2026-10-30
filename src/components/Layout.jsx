@@ -254,6 +254,7 @@ export default function Layout({ children }) {
         </div>
       </header>
 
+      </header>
       {/* ============ MOBILE DRAWER (slides from LEFT) ============ */}
       {mobileOpen && (
         <>

@@ -7,15 +7,15 @@ verify_ssl = true
 python_version = "3.11"
 
 [packages]
-flask = "==3.1.0"
-flask-sqlalchemy = "==3.1.1"
-flask-migrate = "==4.0.4"
-flask-jwt-extended = "==4.6.0"
-flask-cors = "==5.0.1"
-python-dotenv = "==1.1.0"
 apscheduler = "==3.10.4"
 requests = "==2.32.3"
 gunicorn = "==23.0.0"
+flask = "*"
+flask-cors = "*"
+flask-jwt-extended = "*"
+flask-migrate = "*"
+flask-sqlalchemy = "*"
+python-dotenv = "*"
 
 [dev-packages]
 pytest = "==8.3.4"
