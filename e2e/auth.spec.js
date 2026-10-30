@@ -57,6 +57,42 @@ test('registration requires email verification before login', async ({ page }) =
   await greeting(page, 'Wanjiru');
 });
 
+test('email verification link confirms the account and signs the user straight in', async ({ page }) => {
+  const email = uniq('verify');
+  await register(page, { name: 'Njeri Wambui', email });
+  const { hash } = await (await fetch(`${MOCK}/__test/signup-link?email=${encodeURIComponent(email)}`)).json();
+  await page.goto(`/login${hash}`);                       // the link target from the confirmation email
+  await expect(page).toHaveURL(/\/$/);
+  await greeting(page, 'Njeri');
+  // The profile row was created at registration, so the dashboard shows the registered name.
+  await page.goto('/profile');
+  await expect(page.getByLabel('Name')).toHaveValue('Njeri Wambui');
+});
+
+test('an expired confirmation link explains itself and offers to resend', async ({ page }) => {
+  await page.goto('/login#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired');
+  await expect(page.getByRole('alert')).toContainText(/invalid or has expired/i);
+  await expect(page.getByRole('button', { name: /enter your email above to resend/i })).toBeVisible();
+  await page.locator('#email').fill('someone@test.dev');
+  await page.getByRole('button', { name: 'Resend confirmation email' }).click();
+  await expect(page.getByText(/Confirmation email sent/)).toBeVisible();
+});
+
+test('a signed-in user opening /login or /signup is sent to the app, not shown the form', async ({ page }) => {
+  const email = await newUser(page, 'already', 'Kevin Mwangi');
+  await login(page, { email, remember: true });
+  await greeting(page, 'Kevin');
+  await page.goto('/login');
+  await expect(page).toHaveURL(/\/$/);
+  await greeting(page, 'Kevin');
+});
+
+test('the sign-up page no longer claims data stays in the browser', async ({ page }) => {
+  await page.goto('/signup');
+  await expect(page.getByText(/stays in this browser|Nothing is sent to a server/i)).toHaveCount(0);
+  await expect(page.getByText(/email you a link to confirm/i)).toBeVisible();
+});
+
 test('registering an existing email does not create a session or reveal anything extra', async ({ page }) => {
   const email = await newUser(page, 'dup', 'Brian Otieno');
   await page.goto('/signup');

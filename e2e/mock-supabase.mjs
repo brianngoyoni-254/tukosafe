@@ -69,6 +69,14 @@ const server = http.createServer(async (req, res) => {
   if (p === '/__test/expire-access') { for (const t of tokens.values()) t.exp = 1; return send(res, 200, {}); }
   if (p === '/__test/revoke-refresh') { refresh.clear(); return send(res, 200, {}); }
   if (p === '/__test/state') return send(res, 200, { users: [...users.values()].map((u) => u.email), refreshTokens: refresh.size });
+  // What the browser lands on after clicking the confirmation link in the signup email (confirms + signs in).
+  if (p === '/__test/signup-link') {
+    const u = [...users.values()].find((x) => x.email === url.searchParams.get('email'));
+    if (!u) return send(res, 404, {});
+    u.confirmed = true; u.confirmedAt = new Date().toISOString();
+    const s = issue(u);
+    return send(res, 200, { hash: `#access_token=${s.access_token}&expires_in=${ACCESS_TTL}&refresh_token=${s.refresh_token}&token_type=bearer&type=signup` });
+  }
   if (p === '/__test/recovery') {
     const u = users.get(recoveries.get(url.searchParams.get('email')));
     if (!u) return send(res, 404, {});

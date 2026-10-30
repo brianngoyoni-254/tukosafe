@@ -5,20 +5,44 @@ Go out. Have fun. Get home safe. React 19 + Vite + Tailwind 4 frontend on a Supa
 
 ## Setup
 
-1. Create a Supabase project. Auth > Providers > Email: keep "Confirm email" on.
-   Auth > URL configuration: add your site URL (e.g. `http://localhost:5173`) and its `/reset-password` path.
-2. Copy `.env.example` to `.env.local` and fill in the project URL and **anon** key.
-   Never put the `service_role` key in the frontend.
-3. Apply migrations:
+1. Create a Supabase project (supabase.com > New project).
+2. Connect the frontend. Open `.env.local` (a placeholder file is already there; it is git-ignored) and set:
+   - `VITE_SUPABASE_URL` = *Project Settings > API > Project URL*
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` = *Project Settings > API > publishable / anon public key*
+     (`VITE_SUPABASE_ANON_KEY` also works for older projects; the publishable name wins if both are set)
+
+   Never use the `service_role` / secret key here: anything prefixed `VITE_` is sent to every browser.
+   The app refuses to start sign-in if it detects one, and tells you why.
+3. Dashboard settings you must do by hand (no code can do these for you):
+   - **Authentication > Sign In / Providers > Email**: enabled, **Confirm email = ON**, sign-ups not disabled.
+   - **Authentication > URL Configuration**: *Site URL* = your site (e.g. `http://localhost:5173` while developing) and add
+     *Redirect URLs*: `http://localhost:5173/login` and `http://localhost:5173/reset-password` (plus your production
+     equivalents). Without these, verification and password-reset links land on the wrong page or are rejected.
+   - **Authentication > Emails**: for real use, configure custom SMTP. Supabase's built-in mailer is heavily rate-limited
+     and only meant for testing.
+4. Apply migrations:
    ```
    npx supabase link --project-ref <ref>
    npx supabase db push
    ```
    or paste `supabase/migrations/*.sql` in order into the SQL editor.
-4. Database > Extensions: enable `pg_cron` and `pg_net`. `pg_cron` runs the overdue check-in scheduler and
+5. Database > Extensions: enable `pg_cron` and `pg_net`. `pg_cron` runs the overdue check-in scheduler and
    outing/share expiry every minute **on the server**, so alerts do not depend on any browser being open.
    Without `pg_cron` those jobs do not run.
-5. `npm install && npm run dev`
+6. `npm install`, restart the dev server (Vite only reads `.env.local` at start-up), then verify the connection:
+
+   ```sh
+   npm run check:supabase   # validates your settings and probes the live project (auth settings, migrations, RLS)
+   npm run dev
+   ```
+
+   `check:supabase` uses only the public key. It reports exactly what is missing: wrong URL/key, sign-ups disabled,
+   email confirmation off, migrations not applied, or functions callable by anonymous visitors.
+
+Sign-in behaviour: **Remember me** checked keeps the session in `localStorage` (survives closing the browser); unchecked
+keeps it in `sessionStorage` (gone when the browser session ends). Registration sends a confirmation email; opening the
+link signs the user in. A profile row is created by a database trigger at registration (and `ensure_profile()` repairs it
+if it is ever missing).
 
 ## Notifications (in-app, web push, email, SMS)
 

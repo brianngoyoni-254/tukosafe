@@ -13,7 +13,7 @@ export default function About() {
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">Tuko salama. We are safe.</h2>
           <p className="text-white/90 max-w-[58ch] m-0">
-            TukoSafe comes from the Swahili <i>tuko salama</i>. This prototype explores how friends in Kenya could look out for each other on nights out.
+            TukoSafe comes from the Swahili <i>tuko salama</i>. TukoSafe helps friends in Kenya look out for each other on nights out, with consent at every step.
           </p>
         </div>
       </div>
@@ -23,16 +23,17 @@ export default function About() {
             Human-Centered Technology: Building Trust in Communities.
           </p>
           <p className="text-mut max-w-[64ch] mt-3.5">
-            The demo previews check-ins, discreet help prompts, and sample contact briefs. It does not
-            monitor participants, send alerts, or contact emergency responders.
+            With an account you can invite trusted friends, message them, share your location for a limited time,
+            plan a journey home with server-side check-in alerts, and send an SOS to your trusted friends. TukoSafe does
+            not monitor anyone in the background and does not contact emergency responders.
           </p>
         </Card>
 
         <div className="grid md:grid-cols-3 gap-5 mt-5">
           {[
-            ['AI concept', 'The interface previews proposed AI assistance with scripted examples and local rules.'],
-            ['People should approve and act', 'The intended design keeps decisions with people. This prototype does not deliver messages.'],
-            ['Demo fallback', 'Local sample wording remains available when the concept controls are switched off.'],
+            ['Templates, not AI', 'Check-in wording uses fixed templates and simple rules. No AI service is connected.'],
+            ['People approve and act', 'You choose who is told and what is sent. Friends are alerted inside TukoSafe, and by push, email or SMS only if they turned those on and the service is set up.'],
+            ['Works without extras', 'Alerts, check-ins and messaging do not depend on any AI feature.'],
           ].map(([t, d]) => (
             <Card key={t}>
               <h3 className="font-display font-extrabold text-lg">{t}</h3>
@@ -58,7 +59,7 @@ export default function About() {
           </div>
         </div>
         <p className="text-mut text-sm mt-4">
-          This is a hackathon prototype. Contacts, SMS and transport are simulated, and TukoSafe is not an emergency service.
+          TukoSafe is not an emergency service. In an emergency call 999 or 112.
         </p>
       </div>
     </>

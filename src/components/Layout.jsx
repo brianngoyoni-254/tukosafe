@@ -77,7 +77,7 @@ export default function Layout({ children }) {
           <div className="mt-8 pt-6 border-t border-white/10 text-xs flex flex-wrap items-center justify-between gap-4">
             <p className="m-0 opacity-80 max-w-[70ch]">
               TukoSafe is not an emergency service. Notifying friends is not dispatching responders.
-              Prototype build. Status colours are not a guarantee.
+              Status indicators are not a guarantee of anyone&apos;s safety.
             </p>
             <ThemeSelector direction="up" />
           </div>

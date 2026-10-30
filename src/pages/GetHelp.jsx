@@ -262,7 +262,7 @@ export default function GetHelp() {
 
           <Card className="text-center">
             <h3 className="font-display font-extrabold text-lg m-0">SOS</h3>
-            <p className="text-mut text-sm mt-1">Hold for 3 seconds to preview the SOS state. No contact is notified.</p>
+            <p className="text-mut text-sm mt-1">Hold for 3 seconds to alert your trusted friends. Release early to cancel.</p>
             <SosButton />
             <div className="flex justify-center gap-2.5 mt-4">
               <Button variant="amber" href="tel:999">Call 999</Button>

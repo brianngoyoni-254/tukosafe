@@ -77,7 +77,7 @@ export default function Safety() {
               {[
                 ['Tell a friend quietly', 'Use Get Me Home with a few words or a code phrase.', ''],
                 ['Ask for help', 'Share your location and ask someone to come.', 'a'],
-                ['Hold SOS', 'Three seconds to preview the demo alert. No contact is notified.', 'r'],
+                ['Hold SOS', 'Hold for three seconds to alert your trusted friends. It does not call emergency services.', 'r'],
                 ['Call 999 or 112', 'If you believe you are in danger.', 'r'],
               ].map(([t, d, tone], i) => (
                 <li key={i} className="relative pl-6 pb-5 -ml-1.5">
