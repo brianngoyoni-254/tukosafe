@@ -3,10 +3,10 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 
 const STEPS = [
-  { Icon: LuCalendar, title: '1. Plan the outing', desc: 'Pick friends, a window, and a return-home plan.', cls: 'bg-white border-line' },
-  { Icon: LuHandshake, title: '2. Opt in', desc: 'Everyone agrees to share. Anyone can leave any time.', cls: 'bg-white border-line' },
-  { Icon: LuMessageCircle, title: '3. Check in', desc: 'Msaidizi asks if you’re okay. A tap answers.', cls: 'bg-white border-line' },
-  { Icon: LuHouse, title: '4. Get home', desc: 'Tap “I’m home”. Sharing ends and your contact is told.', cls: 'bg-accent text-white border-teal' },
+  { Icon: LuCalendar, title: '1. Plan the outing', desc: 'Pick friends, a window, and a return-home plan.', cls: 'bg-surface border-line' },
+  { Icon: LuHandshake, title: '2. Opt in', desc: 'Everyone agrees to share. Anyone can leave any time.', cls: 'bg-surface border-line' },
+  { Icon: LuMessageCircle, title: '3. Check in', desc: 'Msaidizi asks if you’re okay. A tap answers.', cls: 'bg-surface border-line' },
+  { Icon: LuHouse, title: '4. Get home', desc: 'Tap “I’m home”. Sharing ends and your contact is told.', cls: 'bg-accent text-white border-accent' },
 ];
 
 const LADDER = [
@@ -27,7 +27,7 @@ export default function HowItWorks() {
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">From plan to doorstep</h2>
           <p className="text-white/90 max-w-[58ch] m-0">
-            Four steps for you, one calm brief for your friends, and fixed rules that no AI can change.
+            A prototype walkthrough with sample data. No messages, alerts, or AI service are connected.
           </p>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default function HowItWorks() {
         <div className="grid md:grid-cols-2 gap-10 mt-10 items-start">
           <div>
             <h2 className="font-display font-extrabold text-[clamp(1.6rem,3.5vw,2.3rem)]">If a check-in is missed</h2>
-            <p className="text-mut">Timers run on fixed rules. AI only words the messages.</p>
+            <p className="text-mut">Use the check-in page to advance each state manually; there is no running timer.</p>
             <ol className="list-none m-0 my-4 ml-2.5 p-0 border-l-[3px] border-accent">
               {[
                 ['Scheduled', 'A check-in is planned for the end of your outing.', ''],
@@ -58,7 +58,7 @@ export default function HowItWorks() {
                   <span
                     className={`absolute -left-[12px] top-0.5 w-[21px] h-[21px] rounded-full border-4 ${
                       tone === 'r' ? 'border-red' : tone === 'a' ? 'border-amber' : 'border-accent'
-                    } bg-white`}
+                    } bg-surface`}
                   />
                   <h3 className="font-display font-extrabold text-base m-0">{t}</h3>
                   <span className="text-mut text-sm">{d}</span>

@@ -13,7 +13,7 @@ export default function About() {
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">Tuko salama. We are safe.</h2>
           <p className="text-white/90 max-w-[58ch] m-0">
-            TukoSafe comes from the Swahili <i>tuko salama</i>. It helps friends in Kenya look out for each other on nights out.
+            TukoSafe comes from the Swahili <i>tuko salama</i>. This prototype explores how friends in Kenya could look out for each other on nights out.
           </p>
         </div>
       </div>
@@ -23,16 +23,16 @@ export default function About() {
             Human-Centered Technology: Building Trust in Communities.
           </p>
           <p className="text-mut max-w-[64ch] mt-3.5">
-            TukoSafe notices when something may be wrong, helps you ask for help discreetly, and gets
-            everyone home. It tells a worried friend what is known, what is not, and what to do next.
+            The demo previews check-ins, discreet help prompts, and sample contact briefs. It does not
+            monitor participants, send alerts, or contact emergency responders.
           </p>
         </Card>
 
         <div className="grid md:grid-cols-3 gap-5 mt-5">
           {[
-            ['AI informs and suggests', 'It summarises verified facts and drafts messages. That is where it stops.'],
-            ['You approve and act', 'You edit, send, call, or contact 999 / 112. AI never contacts responders.'],
-            ['Works with AI switched off', 'Every AI feature has a plain fallback, so help is never blocked.'],
+            ['AI concept', 'The interface previews proposed AI assistance with scripted examples and local rules.'],
+            ['People should approve and act', 'The intended design keeps decisions with people. This prototype does not deliver messages.'],
+            ['Demo fallback', 'Local sample wording remains available when the concept controls are switched off.'],
           ].map(([t, d]) => (
             <Card key={t}>
               <h3 className="font-display font-extrabold text-lg">{t}</h3>
@@ -43,13 +43,13 @@ export default function About() {
 
         <div className="mt-10 bg-deep text-white rounded-3xl p-6 md:p-11 grid md:grid-cols-[1.2fr_1fr] gap-7 items-center">
           <div>
-            <h2 className="font-display font-extrabold text-[clamp(1.6rem,3.5vw,2.3rem)] mb-1.5">Hard limits</h2>
+            <h2 className="font-display font-extrabold text-[clamp(1.6rem,3.5vw,2.3rem)] mb-1.5">Product principles</h2>
             <ul className="list-disc pl-5 text-white/90 text-sm space-y-1 m-0">
-              <li>AI never contacts responders.</li>
-              <li>AI never labels anyone missing or in danger.</li>
-              <li>AI never starts or extends sharing.</li>
-              <li>AI never delays an escalation timer.</li>
-              <li>Your data is never used for ads or training.</li>
+              <li>AI should never contact responders.</li>
+              <li>AI should not label anyone missing or in danger.</li>
+              <li>Sharing should require clear, revocable consent.</li>
+              <li>AI should never control escalation timing.</li>
+              <li>Data use and retention need explicit production safeguards.</li>
             </ul>
           </div>
           <div className="flex flex-wrap gap-2.5">

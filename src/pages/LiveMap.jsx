@@ -7,12 +7,11 @@ import Button from '../components/ui/Button';
 import { formatCoords, compassLabel, formatTime, mapsLink } from '../lib/format';
 
 export default function LiveMap() {
-  const { pos, locate, useDemoLocation, send } = useApp();
+  const { pos, locate, useDemoLocation, showToast } = useApp();
   const [draft, setDraft] = useState('');
 
   const startLive = () => {
-    locate();
-    send('Live updates');
+    showToast('Live location sharing is not connected in this demo.');
   };
 
   const generateDraft = () => {
@@ -28,13 +27,13 @@ export default function LiveMap() {
         <div className="max-w-[1120px] mx-auto px-5 relative">
           <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-white/90 text-sm mb-3">
             <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
-            Live map
+            Location preview
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">
             Where you are, on your terms
           </h2>
           <p className="text-white/90 max-w-[58ch] m-0">
-            The map finds you automatically. Your position stays in this browser until you choose to share it.
+            Request a single browser location fix or use demo data. The map is illustrative; live tracking is not connected.
           </p>
         </div>
       </div>
@@ -71,10 +70,10 @@ export default function LiveMap() {
             </Card>
 
             <Card>
-              <b>Live updates</b>
-              <p className="text-mut text-sm mb-2">Updates stop on their own when time is up.</p>
+              <b>Live updates (demo only)</b>
+              <p className="text-mut text-sm mb-2">No location updates are broadcast or tracked.</p>
               <div className="flex flex-wrap gap-2.5 mt-2">
-                <Button onClick={startLive} disabled={!pos}><LuRadio size={16} /> Start live updates</Button>
+                <Button onClick={startLive}><LuRadio size={16} /> Preview live updates</Button>
               </div>
             </Card>
 

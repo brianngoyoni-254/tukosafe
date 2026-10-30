@@ -30,7 +30,7 @@ export default function Safety() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
           {SAFETY_HELPLINES.map((h) => {
             const Icon = ICONS[h.icon] || LuPhone;
-            const cls = h.kind === 'sos' ? 'bg-red border-red text-white' : h.kind === 'pri' ? 'bg-accent border-teal text-white' : 'bg-white border-line text-ink';
+            const cls = h.kind === 'sos' ? 'bg-red border-red text-white' : h.kind === 'pri' ? 'bg-accent border-accent text-white' : 'bg-surface border-line text-ink';
             return (
               <a
                 key={h.number}
@@ -77,14 +77,14 @@ export default function Safety() {
               {[
                 ['Tell a friend quietly', 'Use Get Me Home with a few words or a code phrase.', ''],
                 ['Ask for help', 'Share your location and ask someone to come.', 'a'],
-                ['Hold SOS', 'Three seconds. Contacts are alerted immediately.', 'r'],
+                ['Hold SOS', 'Three seconds to preview the demo alert. No contact is notified.', 'r'],
                 ['Call 999 or 112', 'If you believe you are in danger.', 'r'],
               ].map(([t, d, tone], i) => (
                 <li key={i} className="relative pl-6 pb-5 -ml-1.5">
                   <span
                     className={`absolute -left-[12px] top-0.5 w-[21px] h-[21px] rounded-full border-4 ${
                       tone === 'r' ? 'border-red' : tone === 'a' ? 'border-amber' : 'border-accent'
-                    } bg-white`}
+                    } bg-surface`}
                   />
                   <h3 className="font-display font-extrabold text-base m-0">{t}</h3>
                   <span className="text-mut text-sm">{d}</span>

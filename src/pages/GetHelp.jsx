@@ -56,9 +56,9 @@ export default function GetHelp() {
               </div>
               {suggestion && (
                 <div className="p-3 rounded-lg bg-accentbg mb-3">
-                  <span className="inline-block px-2 py-0.5 rounded-md bg-surface text-accent text-xs font-bold">AI-drafted</span>{' '}
+                  <span className="inline-block px-2 py-0.5 rounded-md bg-surface text-accent text-xs font-bold">Keyword-rule demo</span>{' '}
                   Suggested: option {suggestion}
-                  <div className="text-mut text-xs mt-1">Based on: your words only, venue name, time. No coordinates sent.</div>
+                  <div className="text-mut text-xs mt-1">Local keyword rules use only your words. No AI service or network request is connected.</div>
                 </div>
               )}
               <div className="space-y-2">
@@ -77,9 +77,9 @@ export default function GetHelp() {
                     className="w-full mt-1.5 p-2.5 rounded-lg border border-line bg-surface text-ink font-body"
                   />
                   <div className="text-mut text-xs mt-1">
-                    You edit it, you send it.{drafted === 3 ? ' Transport links are simulated.' : ''}
+                    Edit this sample message. The send action below only previews a local demo response.{drafted === 3 ? ' Transport links are not connected.' : ''}
                   </div>
-                  <Button className="mt-2" onClick={() => send('Message to friend')}>Approve and send</Button>
+                  <Button className="mt-2" onClick={() => send('Message to friend')}>Preview send action</Button>
                 </div>
               )}
             </Card>
@@ -88,7 +88,7 @@ export default function GetHelp() {
               <div className="flex justify-between items-center gap-3 flex-wrap">
                 <div>
                   <b className="inline-flex items-center gap-1.5"><LuWifiOff size={14} /> Simulate offline mode</b>
-                  <div className="text-mut text-sm">SOS and check-ins queue until you reconnect.</div>
+                  <div className="text-mut text-sm">Local demo queue only. Reconnecting does not deliver messages.</div>
                 </div>
                 <Toggle checked={offline} onChange={setOffline} label="Offline" />
               </div>

@@ -9,7 +9,7 @@ import { OUTING } from '../data/dummy';
 import { remainLabel } from '../lib/format';
 
 function memberChip(m, step, sharing) {
-  if (!sharing) return <Chip tone="n">Sharing ended</Chip>;
+  if (!sharing) return <Chip tone="n">Demo ended</Chip>;
   if (!m.consent) return <Chip tone="n"><LuClock size={12} /> Not joined</Chip>;
   if (m.you && step >= 3) return <Chip tone="r"><LuTriangleAlert size={12} /> Help may be needed</Chip>;
   if (m.you && step >= 1) return <Chip tone="y"><LuClock size={12} /> Check-in overdue</Chip>;
@@ -29,7 +29,7 @@ export default function Outing() {
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">Opt in for one night</h2>
           <p className="text-white/90 max-w-[58ch] m-0">
-            Sharing is per outing, visible to named friends, and ends on its own.
+            Preview consent controls and automatic expiry in this browser. No location is shared with friends.
           </p>
         </div>
       </div>
@@ -39,11 +39,11 @@ export default function Outing() {
             <Card>
               <div className="flex justify-between items-center gap-3 flex-wrap">
                 <b>{OUTING.title}</b>
-                <Chip tone={sharing ? 'g' : 'n'}>{sharing ? 'Sharing on' : 'Ended'}</Chip>
+                <Chip tone={sharing ? 'g' : 'n'}>{sharing ? 'Demo timer on' : 'Demo ended'}</Chip>
               </div>
               <div className="text-mut text-sm mt-1">
-                {OUTING.startsAt} – {OUTING.endsAt}. Sharing ends in <b>{remainLabel(expiresAt)}</b>.
-                Only people who accept can see your status.
+                {OUTING.startsAt} – {OUTING.endsAt}. Demo sharing ends in <b>{remainLabel(expiresAt)}</b>.
+                Consent switches only change this local preview.
               </div>
             </Card>
 
@@ -63,7 +63,7 @@ export default function Outing() {
                     <span className="text-mut text-sm">You</span>
                   ) : (
                     <div className="flex items-center gap-2 text-mut text-sm">
-                      Consent
+                      Demo consent
                       <Toggle
                         checked={m.consent}
                         onChange={(v) => setMembers((arr) => arr.map((x) => (x.id === m.id ? { ...x, consent: v } : x)))}

@@ -2,22 +2,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { AppContext } from './app-context';
 import { OUTING, MEMBERS, DEMO_POSITION, USER } from '../data/dummy';
 
-const STORAGE_KEY = 'tukosafe:theme';
-const DEFAULT_THEME = 'harbor';
 const INITIAL_EXPIRES_AT = Date.now() + OUTING.expiresInHours * 3_600_000;
 
-function loadTheme() {
-  try {
-    const t = localStorage.getItem(STORAGE_KEY);
-    if (t && ['harbor', 'grove', 'coast', 'ember'].includes(t)) return t;
-  } catch {
-    // ignore
-  }
-  return DEFAULT_THEME;
-}
-
 export function AppProvider({ children }) {
-  const [theme, setThemeState] = useState(loadTheme);
+  const [theme, setThemeState] = useState(() => {
+    try {
+      const t = localStorage.getItem('tukosafe:theme');
+      if (t && ['harbor', 'grove', 'coast', 'ember'].includes(t)) return t;
+    } catch {
+      // ignore
+    }
+    return 'harbor';
+  });
   const [user] = useState(USER);
   const [lang, setLang] = useState('en');
   const [ai, setAi] = useState({ checkin: true, copilot: true, brief: true });
@@ -42,7 +38,7 @@ export function AppProvider({ children }) {
   const setOffline = useCallback((nextOffline) => {
     setOfflineState(nextOffline);
     if (!nextOffline && outbox.length) {
-      showToast(`Back online. Sent ${outbox.length} queued item(s).`);
+      showToast(`Demo only: ${outbox.length} queued item(s) were not delivered.`);
       setOutbox([]);
     }
   }, [outbox.length, showToast]);
@@ -55,9 +51,9 @@ export function AppProvider({ children }) {
     (label) => {
       if (offline) {
         setOutbox((o) => [...o, label]);
-        showToast(`Offline: ${label} queued. It sends when you reconnect.`);
+        showToast(`Demo only: ${label} queued locally; nothing will be sent.`);
       } else {
-        showToast(`${label} sent (simulated).`);
+        showToast(`Demo only: ${label} was not delivered.`);
       }
     },
     [offline, showToast]
@@ -66,7 +62,7 @@ export function AppProvider({ children }) {
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     try {
-      localStorage.setItem(STORAGE_KEY, theme);
+      localStorage.setItem('tukosafe:theme', theme);
     } catch {
       // ignore
     }

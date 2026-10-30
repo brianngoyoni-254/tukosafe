@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../context/app-context';
 
 export default function SosButton() {
-  const { send, setSos, setStep, showToast } = useApp();
+  const { send, setSos, setStep } = useApp();
   const [progress, setProgress] = useState(0);
   const timer = useRef(null);
   const start = useRef(0);
@@ -25,7 +25,6 @@ export default function SosButton() {
         setSos(true);
         setStep(3);
         send('SOS alert');
-        showToast('SOS sent');
       }
     }, 50);
   };
@@ -51,7 +50,7 @@ export default function SosButton() {
         onPointerUp={stop}
         onPointerLeave={stop}
         onPointerCancel={stop}
-        aria-label="Hold to send SOS"
+        aria-label="Hold to trigger SOS demo"
         className="relative w-[180px] h-[180px] rounded-full bg-red text-white font-display font-extrabold text-2xl cursor-pointer touch-none select-none"
       >
         SOS

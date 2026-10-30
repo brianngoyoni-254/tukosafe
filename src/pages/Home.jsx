@@ -4,10 +4,10 @@ import Button from '../components/ui/Button';
 import PhoneMockup from '../components/PhoneMockup';
 
 const ACTIONS = [
-  { to: '/help', icon: LuCircleAlert, title: 'SOS', desc: 'Press and hold. Contacts are alerted immediately.', cls: 'bg-red border-red text-white', descCls: 'text-[#ffe3df]' },
-  { to: '/help', icon: LuHouse, title: 'Get Me Home', desc: 'Type a few words. Send a quiet message you approve.', cls: 'bg-accent border-accent text-white', descCls: 'text-[#d6efea]' },
-  { to: '/outing', icon: LuUsers, title: 'Create an outing', desc: 'Opt in to share for one night. It expires on its own.', cls: 'bg-surface border-line', descCls: 'text-mut' },
-  { to: '/map', icon: LuMap, title: 'Live map', desc: 'Finds your location automatically.', cls: 'bg-surface border-line', descCls: 'text-mut' },
+  { to: '/help', icon: LuCircleAlert, title: 'SOS demo', desc: 'Press and hold to preview an alert. Nothing is sent.', cls: 'bg-red border-red text-white', descCls: 'text-[#ffe3df]' },
+  { to: '/help', icon: LuHouse, title: 'Get Me Home', desc: 'Preview a sample message. Delivery is not connected.', cls: 'bg-accent border-accent text-white', descCls: 'text-[#d6efea]' },
+  { to: '/outing', icon: LuUsers, title: 'Outing demo', desc: 'Preview local consent controls and a timed sharing state.', cls: 'bg-surface border-line', descCls: 'text-mut' },
+  { to: '/map', icon: LuMap, title: 'Location preview', desc: 'Request one browser location fix or use demo data.', cls: 'bg-surface border-line', descCls: 'text-mut' },
 ];
 
 const STEPS = [
@@ -25,7 +25,7 @@ export default function Home() {
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-white/90 text-sm mb-5">
               <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
-              AI-powered, people-led safety companion
+              Safety companion prototype · AI concepts previewed
             </div>
             <h1 className="font-display font-extrabold text-[clamp(2.7rem,6.6vw,5rem)] leading-[1.05] mb-4">
               <span className="block opacity-0 translate-y-5 animate-[up_.8s_cubic-bezier(.2,.7,.2,1)_forwards]">Go out.</span>
@@ -33,8 +33,8 @@ export default function Home() {
               <span className="block text-amber opacity-0 translate-y-5 animate-[up_.8s_cubic-bezier(.2,.7,.2,1)_.36s_forwards]">Get home safe.</span>
             </h1>
             <p className="text-lg text-white/90 max-w-[50ch] mb-6">
-              TukoSafe helps friends in Kenya look out for each other on nights out. It notices when
-              something may be wrong, helps you ask for help discreetly, and gets everyone home.
+              TukoSafe explores how friends in Kenya could look out for each other on nights out.
+              This prototype previews the flows with sample data; it does not monitor or contact anyone.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-[520px]">
               <Button to="/help" variant="amber" size="lg" className="sm:col-span-2">
@@ -47,7 +47,7 @@ export default function Home() {
                 <LuUsers size={18} /> Create an outing
               </Button>
               <Button to="/map" variant="ghost" className="sm:col-span-2">
-                <LuMap size={18} /> Show my location on the live map
+                <LuMap size={18} /> Preview my location
               </Button>
             </div>
             <p className="mt-4 text-mut/80 text-sm">
@@ -55,7 +55,7 @@ export default function Home() {
               <a className="text-white font-bold" href="tel:999">999</a> or{' '}
               <a className="text-white font-bold" href="tel:112">112</a>.
               <br />
-              Your position stays in this browser until you choose to share it.
+              Demo actions do not send alerts, messages, or location updates.
             </p>
           </div>
           <div className="relative grid place-items-center min-h-[520px]">
@@ -115,7 +115,7 @@ export default function Home() {
                 danger, call 999 or 112.”
               </q>
               <span className="inline-block mt-2.5 px-2 py-0.5 rounded-md bg-accentbg text-accent text-xs font-bold">
-                AI-drafted from the facts shown
+                Scripted sample brief from the facts shown
               </span>
             </div>
           </div>
@@ -130,13 +130,13 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-4 mt-6">
             <div className="md:row-span-2 rounded-2xl p-6 bg-deep text-white">
               <div className="font-display font-extrabold text-4xl leading-none">Msaidizi</div>
-              <h3 className="font-display font-extrabold text-lg mt-3">Your AI check-in companion</h3>
+              <h3 className="font-display font-extrabold text-lg mt-3">Msaidizi check-in preview</h3>
               <p className="text-white/90 mt-1">
-                Msaidizi means “helper”. It asks if you’re okay in English, Kiswahili or Sheng. It only
-                words the message. Timers and escalation run on fixed rules, never on AI.
+                Msaidizi means “helper”. This prototype shows sample English, Kiswahili and Sheng messages.
+                Check-ins and escalation are advanced manually; no timer or message service is connected.
               </p>
               <Button to="/checkin" variant="amber" size="sm" className="mt-3">
-                <LuMessageCircle size={16} /> Try a check-in
+                <LuMessageCircle size={16} /> Try the demo
               </Button>
             </div>
             <div className="rounded-2xl p-6 bg-surface border border-line">
@@ -146,12 +146,12 @@ export default function Home() {
             </div>
             <div className="rounded-2xl p-6 bg-amberbg">
               <h3 className="font-display font-extrabold text-lg">Short and time-boxed</h3>
-              <p className="text-mut text-sm mb-3">Sharing is per outing, visible to named friends, and ends automatically.</p>
+              <p className="text-mut text-sm mb-3">Preview a local sharing timer. No location is broadcast to other people.</p>
               <Button to="/outing" variant="outline" size="sm">See an outing</Button>
             </div>
             <div className="rounded-2xl p-6 bg-surface border border-line">
               <h3 className="font-display font-extrabold text-lg">Trust Panel</h3>
-              <p className="text-mut text-sm mb-3">Every AI output shows its facts and can be flagged or switched off.</p>
+              <p className="text-mut text-sm mb-3">Inspect scripted examples, toggle them, and try the local flag control.</p>
               <Button to="/trust" variant="outline" size="sm">Open</Button>
             </div>
             <div className="rounded-2xl p-6 bg-surface border border-line">

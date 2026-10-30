@@ -3,9 +3,9 @@ import { LuCheck, LuTriangleAlert } from 'react-icons/lu';
 import { useApp } from '../context/app-context';
 
 const CAPTIONS = [
-  'Msaidizi checks in, in your language',
-  'The phone goes quiet. The grace period runs',
-  'Your friend gets a calm brief, not a panic',
+  'Sample check-in in your selected language',
+  'Manually preview the missed-check-in steps',
+  'Preview a scripted contact brief',
 ];
 
 export default function PhoneMockup() {
@@ -31,7 +31,7 @@ export default function PhoneMockup() {
       <h4 className="font-display font-extrabold text-base m-0">Msaidizi</h4>
       <div className="bg-surface border border-line rounded-[14px_14px_14px_4px] p-3 text-sm">{greeting}</div>
       <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-accentbg text-accent">
-        {ai.checkin ? 'AI-drafted' : 'Template (AI off)'}
+        {ai.checkin ? 'Scripted example' : 'Fallback example'}
       </span>
       <button className="w-full py-3 rounded-xl bg-accent text-white font-bold text-sm inline-flex items-center justify-center gap-1.5 animate-[tap_2s_infinite]">
         <LuCheck size={16} /> I’m okay
@@ -46,11 +46,11 @@ export default function PhoneMockup() {
         <div className="h-full bg-amber animate-[fill_4s_linear_infinite]" />
       </div>
       <div className="bg-surface border border-line rounded-[14px_14px_14px_4px] p-3 text-sm">
-        Wanjiru’s phone is quiet. Brian will only be alerted when the grace period ends.
+        This demo advances manually. No contact is notified when the grace period ends.
       </div>
     </div>,
     <div key="s3" className="absolute inset-0 p-5 space-y-3">
-      <h4 className="font-display font-extrabold text-base m-0">Brian’s alert</h4>
+      <h4 className="font-display font-extrabold text-base m-0">Brian’s alert preview</h4>
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amberbg text-amber">
         <LuTriangleAlert size={12} /> Verify safety
       </span>
@@ -59,7 +59,7 @@ export default function PhoneMockup() {
         Westlands, 1:42 AM. Please call first. If you believe she is in danger, call 999 or 112.
       </div>
       <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-accentbg text-accent">
-        AI-drafted from the facts shown
+        Scripted sample from the facts shown
       </span>
     </div>,
   ];

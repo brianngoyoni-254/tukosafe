@@ -17,13 +17,13 @@ export default function CheckIn() {
         <div className="max-w-[1120px] mx-auto px-5 relative">
           <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-white/90 text-sm mb-3">
             <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
-            Msaidizi check-ins
+            Msaidizi check-in demo
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">
             A calm check-in, in your language
           </h2>
           <p className="text-white/90 max-w-[58ch] m-0">
-            English, Kiswahili or Sheng. A tap answers. Timers are never controlled by AI.
+            Sample English, Kiswahili or Sheng wording. Use the controls to advance the demo; no messages are sent.
           </p>
         </div>
       </div>
@@ -37,7 +37,7 @@ export default function CheckIn() {
                   <button
                     key={k}
                     onClick={() => setLang(k)}
-                    className={`px-3.5 py-2 rounded-lg font-bold text-sm ${lang === k ? 'bg-white text-ink' : 'text-ink hover:bg-white/40'}`}
+                    className={`px-3.5 py-2 rounded-lg font-bold text-sm ${lang === k ? 'bg-surface text-ink' : 'text-ink hover:bg-surface/40'}`}
                   >
                     {label}
                   </button>
@@ -68,37 +68,37 @@ export default function CheckIn() {
             </Card>
 
             <p className="text-mut text-sm">
-              Timers run in a deterministic scheduler. AI only words the message and can’t delay or cancel escalation.
+              This is a manual simulation: there is no scheduled timer, message delivery, or contact alert.
             </p>
           </div>
 
           <div className="grid place-items-center">
-            <div className="relative w-[292px] bg-[#0d1f1d] border-8 border-[#1d3f3b] rounded-[40px] p-2.5 shadow-[0_40px_70px_rgba(0,0,0,0.4)]">
-              <div className="h-[430px] rounded-[28px] bg-[#f4f8f7] text-ink p-5 space-y-3 overflow-hidden">
+            <div className="relative w-[292px] bg-deep border-line border-8 rounded-[40px] p-2.5 shadow-[0_40px_70px_rgba(0,0,0,0.4)]">
+              <div className="h-[430px] rounded-[28px] bg-surface text-ink p-5 space-y-3 overflow-hidden">
                 {step === 4 ? (
                   <>
                     <h4 className="font-display font-extrabold text-base m-0">Msaidizi</h4>
-                    <div className="bg-white border border-line rounded-[14px_14px_14px_4px] p-3 text-sm">{template}</div>
+                    <div className="bg-surface border border-line rounded-[14px_14px_14px_4px] p-3 text-sm">{template}</div>
                     <div className="ml-auto w-fit max-w-[80%] bg-accent text-white rounded-[16px_16px_4px_16px] px-3 py-2 text-sm">
                       I’m okay ✓
                     </div>
-                    <Chip tone="g">Friends told</Chip>
+                    <Chip tone="g">Demo resolved</Chip>
                   </>
                 ) : step === 3 ? (
                   <>
-                    <h4 className="font-display font-extrabold text-base m-0">Contact alerted</h4>
-                    <Chip tone="r">Alert sent to Brian</Chip>
-                    <div className="bg-white border border-line rounded-[14px] p-3 text-sm mt-2">
-                      The grace period ended. Brian received a calm brief with your last known location.
+                    <h4 className="font-display font-extrabold text-base m-0">Contact alert preview</h4>
+                    <Chip tone="r">Demo alert for Brian</Chip>
+                    <div className="bg-surface border border-line rounded-[14px] p-3 text-sm mt-2">
+                      The simulated grace period ended. No message was sent to Brian.
                     </div>
                     <button className="w-full py-3 rounded-xl bg-accent text-white font-bold text-sm">I’m okay ✓</button>
                   </>
                 ) : (
                   <>
                     <h4 className="font-display font-extrabold text-base m-0">Msaidizi</h4>
-                    <div className="bg-white border border-line rounded-[14px_14px_14px_4px] p-3 text-sm">{template}</div>
+                    <div className="bg-surface border border-line rounded-[14px_14px_14px_4px] p-3 text-sm">{template}</div>
                     <Chip tone={ai.checkin ? 'default' : 'y'}>
-                      {ai.checkin ? 'AI-drafted' : 'Template (AI off)'}
+                      {ai.checkin ? 'Scripted example' : 'Fallback example'}
                     </Chip>
                     {step === 2 && (
                       <div className="h-2 rounded-full bg-line overflow-hidden">
