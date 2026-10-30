@@ -20,8 +20,11 @@ export default function ContactView() {
             If you believe someone is in danger, call 999 or 112.
           </p>
           <div className="flex flex-wrap gap-2.5">
-            <Button href="tel:+254700000000"><LuPhone size={16} /> Call {AI_FACTS.name}</Button>
+            <Button variant="outline" onClick={() => showToast('Demo only: calling a contact is not connected.')}>
+              <LuPhone size={16} /> Preview contact call
+            </Button>
             <Button variant="amber" href="tel:999"><LuPhone size={16} /> Call 999</Button>
+            <Button variant="outline" href="tel:112"><LuPhone size={16} /> Call 112</Button>
             <Button variant="outline" onClick={() => showToast('Acknowledged (simulated)')}>Acknowledge</Button>
           </div>
         </Card>
@@ -79,8 +82,11 @@ export default function ContactView() {
               {AI_FACTS.battery}%; usual trip {AI_FACTS.usualTripMinutes} min. Fixed sample data; status is not a guarantee.
             </div>
             <div className="flex flex-wrap gap-2.5">
-              <Button href="tel:+254700000000"><LuPhone size={16} /> Call {AI_FACTS.name}</Button>
-              <Button variant="amber" href="tel:999"><LuPhone size={16} /> Call 999 / 112</Button>
+              <Button variant="outline" onClick={() => showToast('Demo only: calling a contact is not connected.')}>
+                <LuPhone size={16} /> Preview contact call
+              </Button>
+              <Button variant="amber" href="tel:999"><LuPhone size={16} /> Call 999</Button>
+              <Button variant="outline" href="tel:112"><LuPhone size={16} /> Call 112</Button>
               <Button variant="outline" onClick={flag}><LuFlag size={16} /> Flag as wrong or unhelpful</Button>
             </div>
           </Card>
