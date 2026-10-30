@@ -4,12 +4,14 @@ import CheckinStepper from '../components/CheckinStepper';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Chip from '../components/ui/Chip';
-import { CHECKIN_TEMPLATES, LANG_LABELS } from '../lib/messages';
+import { CHECKIN_TEMPLATES, LANG_LABELS } from '../data/dummy';
 
 export default function CheckIn() {
   const { lang, setLang, ai, step, setStep, setSos, send, members } = useApp();
   const name = members[0].name;
-  const template = ai.checkin ? CHECKIN_TEMPLATES[lang](name) : 'Check-in due: please confirm you are okay.';
+  const template = ai.checkin
+    ? CHECKIN_TEMPLATES[lang](name)
+    : 'Check-in due: please confirm you are okay. If something isn’t right, reply “help”.';
 
   return (
     <>
@@ -37,7 +39,9 @@ export default function CheckIn() {
                   <button
                     key={k}
                     onClick={() => setLang(k)}
-                    className={`px-3.5 py-2 rounded-lg font-bold text-sm ${lang === k ? 'bg-white text-ink' : 'text-ink hover:bg-white/40'}`}
+                    className={`px-3.5 py-2 rounded-lg font-bold text-sm ${
+                      lang === k ? 'bg-white text-ink' : 'text-ink hover:bg-white/40'
+                    }`}
                   >
                     {label}
                   </button>
@@ -91,12 +95,16 @@ export default function CheckIn() {
                     <div className="bg-white border border-line rounded-[14px] p-3 text-sm mt-2">
                       The grace period ended. Brian received a calm brief with your last known location.
                     </div>
-                    <button className="w-full py-3 rounded-xl bg-teal text-white font-bold text-sm">I’m okay ✓</button>
+                    <button className="w-full py-3 rounded-xl bg-teal text-white font-bold text-sm">
+                      I’m okay ✓
+                    </button>
                   </>
                 ) : (
                   <>
                     <h4 className="font-display font-extrabold text-base m-0">Msaidizi</h4>
-                    <div className="bg-white border border-line rounded-[14px_14px_14px_4px] p-3 text-sm">{template}</div>
+                    <div className="bg-white border border-line rounded-[14px_14px_14px_4px] p-3 text-sm">
+                      {template}
+                    </div>
                     <Chip tone={ai.checkin ? 'default' : 'y'}>
                       {ai.checkin ? 'AI-drafted' : 'Template (AI off)'}
                     </Chip>
@@ -105,7 +113,9 @@ export default function CheckIn() {
                         <div className="h-full bg-amber animate-[fill_4s_linear_infinite]" />
                       </div>
                     )}
-                    <button className="w-full py-3 rounded-xl bg-teal text-white font-bold text-sm">I’m okay ✓</button>
+                    <button className="w-full py-3 rounded-xl bg-teal text-white font-bold text-sm">
+                      I’m okay ✓
+                    </button>
                   </>
                 )}
               </div>
