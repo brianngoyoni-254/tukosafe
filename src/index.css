@@ -1,1 +1,55 @@
 @import "tailwindcss";
+
+@theme {
+  --color-ink: #0c2b27;
+  --color-mut: #53706b;
+  --color-line: #d5e2df;
+  --color-teal: #0f5d56;
+  --color-teal2: #1c8277;
+  --color-mint: #e3f1ee;
+  --color-amber: #b36b00;
+  --color-amberbg: #fff1d6;
+  --color-red: #c0372d;
+  --color-redbg: #fde7e4;
+  --color-green: #17693a;
+  --color-greenbg: #dff3e6;
+  --color-deep: #072724;
+  --color-mapbg: #eaf2f0;
+  --color-mapln: #cddcd8;
+  --color-maprd: #ffffff;
+
+  --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: "DM Sans", "Segoe UI", system-ui, sans-serif;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body {
+    background: #f4f8f7;
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.5em;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-amber);
+    outline-offset: 2px;
+  }
+}
+
+@keyframes blink { 50% { opacity: 0.25 } }
+@keyframes up { to { opacity: 1; transform: none } }
+@keyframes bob { 50% { transform: translateY(-8px) } }
+@keyframes pulse-ring { from { transform: scale(.6); opacity:.7 } to { transform: scale(2.6); opacity:0 } }
+@keyframes fill { to { width: 100% } }
+@keyframes tap { 50% { transform: scale(.96) } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+}
