@@ -31,9 +31,17 @@ export default function Layout({ children }) {
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   useEffect(() => { setMobileOpen(false); }, [pathname]);
 
+  // Lock body scroll while drawer is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
+  // Close on Escape
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') setMobileOpen(false); };
+    if (mobileOpen) window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, [mobileOpen]);
 
   return (
@@ -41,19 +49,33 @@ export default function Layout({ children }) {
       {/* ============ HEADER ============ */}
       <header className="sticky top-0 z-40 bg-deep/95 backdrop-blur-md border-b border-white/10">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-16 flex items-center justify-between gap-6">
+          <div className="h-16 flex items-center justify-between gap-4">
 
-            {/* Brand */}
-            <Link
-              to="/"
-              className="flex items-center gap-2.5 shrink-0 text-white no-underline group"
-              aria-label="TukoSafe home"
-            >
-              <span className="w-8 h-8 rounded-[50%_50%_50%_4px] bg-amber -rotate-45 inline-block transition-transform group-hover:rotate-[-30deg]" />
-              <span className="font-display font-extrabold text-xl tracking-tight">TukoSafe</span>
-            </Link>
+            {/* LEFT: mobile hamburger + brand */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Mobile-only hamburger, far left */}
+              <button
+                type="button"
+                onClick={() => setMobileOpen((v) => !v)}
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileOpen}
+                className="lg:hidden w-10 h-10 -ml-2 grid place-items-center rounded-lg text-white hover:bg-white/10 transition"
+              >
+                {mobileOpen ? <LuX size={22} /> : <LuMenu size={22} />}
+              </button>
 
-            {/* Desktop nav */}
+              {/* Brand */}
+              <Link
+                to="/"
+                className="flex items-center gap-2.5 text-white no-underline group"
+                aria-label="TukoSafe home"
+              >
+                <span className="w-8 h-8 rounded-[50%_50%_50%_4px] bg-amber -rotate-45 inline-block transition-transform group-hover:rotate-[-30deg]" />
+                <span className="font-display font-extrabold text-xl tracking-tight">TukoSafe</span>
+              </Link>
+            </div>
+
+            {/* CENTER: desktop nav */}
             <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center" aria-label="Main">
               {PRIMARY_NAV.map(({ to, label, icon: Icon }) => {
                 const active = pathname === to;
@@ -78,7 +100,7 @@ export default function Layout({ children }) {
               })}
             </nav>
 
-            {/* Right actions (desktop) */}
+            {/* RIGHT: emergency + CTA (desktop only) */}
             <div className="hidden lg:flex items-center gap-2.5 shrink-0">
               <a
                 href="tel:999"
@@ -96,22 +118,11 @@ export default function Layout({ children }) {
                 Get Me Home
               </Link>
             </div>
-
-            {/* Mobile toggle */}
-            <button
-              type="button"
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={mobileOpen}
-              className="lg:hidden w-10 h-10 grid place-items-center rounded-lg bg-white/10 text-white hover:bg-white/15 transition"
-            >
-              {mobileOpen ? <LuX size={20} /> : <LuMenu size={20} />}
-            </button>
           </div>
         </div>
       </header>
 
-      {/* ============ MOBILE DRAWER ============ */}
+      {/* ============ MOBILE DRAWER (slides from LEFT) ============ */}
       {mobileOpen && (
         <>
           <div
@@ -120,9 +131,10 @@ export default function Layout({ children }) {
             aria-hidden="true"
           />
           <aside
-            className="fixed top-16 right-0 bottom-0 z-50 w-[300px] max-w-[85vw] bg-deep text-white lg:hidden overflow-y-auto border-l border-white/10 shadow-2xl"
+            className="fixed top-16 left-0 bottom-0 z-50 w-[300px] max-w-[85vw] bg-deep text-white lg:hidden overflow-y-auto border-r border-white/10 shadow-2xl animate-[slideIn_.2s_ease-out]"
             role="dialog"
             aria-label="Menu"
+            style={{ animationFillMode: 'forwards' }}
           >
             <div className="p-4 space-y-6">
               {/* Primary */}
@@ -242,7 +254,7 @@ export default function Layout({ children }) {
           <div className="mt-8 pt-6 border-t border-white/10 text-xs opacity-80">
             <p className="m-0">
               TukoSafe is not an emergency service. Notifying friends is not dispatching responders.
-              Hackathon prototype: contacts, SMS and transport are simulated. Status colours are not a guarantee.
+              Prototype build. Status colours are not a guarantee.
             </p>
           </div>
         </div>
