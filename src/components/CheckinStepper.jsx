@@ -10,6 +10,8 @@ export default function CheckinStepper({ step }) {
             : i === step
             ? step === 3
               ? 'bg-redbg text-red'
+              : step === 4
+              ? 'bg-greenbg text-green'
               : 'bg-amberbg text-amber'
             : 'bg-line text-mut';
         return (

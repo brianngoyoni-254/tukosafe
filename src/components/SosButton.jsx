@@ -14,7 +14,7 @@ export default function SosButton() {
   const start = useRef(0);
   const holding = useRef(false);
   const include = useRef(includeLocation);
-  include.current = includeLocation;
+  useEffect(() => { include.current = includeLocation; }, [includeLocation]);
 
   const cancel = useCallback(() => {
     if (timer.current) clearInterval(timer.current);

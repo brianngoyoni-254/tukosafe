@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   LuMail, LuLock, LuEye, LuEyeOff, LuUser, LuPhone, LuArrowRight,
-  LuShieldCheck, LuUsers, LuCircleAlert, LuCheck,
+  LuShieldCheck, LuUsers, LuCircleAlert,
 } from 'react-icons/lu';
 import { useAuth } from '../context/AuthContext';
 

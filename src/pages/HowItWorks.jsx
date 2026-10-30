@@ -1,4 +1,4 @@
-import { LuCalendar, LuHandshake, LuMessageCircle, LuHouse, LuArrowRight } from 'react-icons/lu';
+import { LuCalendar, LuHandshake, LuMessageCircle, LuHouse } from 'react-icons/lu';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 

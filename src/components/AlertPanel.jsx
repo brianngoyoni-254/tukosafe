@@ -3,9 +3,18 @@ import { LuTriangleAlert, LuCheck, LuClock, LuMapPin } from 'react-icons/lu';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useApp } from '../context/AppContext';
+import * as api from '../lib/api';
+import { useLiveQuery } from '../lib/useLiveQuery';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import { mapsLink } from '../lib/format';
+
+const CHANNEL_LABEL = { push: 'push', email: 'email', sms: 'SMS' };
+// "accepted" means the provider took it. It does NOT mean the person has seen it.
+const STATUS_LABEL = {
+  queued: 'queued', sending: 'sending', provider_accepted: 'handed to provider (not confirmed read)',
+  failed: 'failed', not_configured: 'not sent (provider not set up)',
+};
 
 const when = (iso) => new Date(iso).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
 
@@ -23,6 +32,10 @@ export default function AlertPanel() {
 
   const mine = alerts.filter((a) => a.sender_id === user.id);
   const incoming = alerts.filter((a) => a.sender_id !== user.id);
+  const notificationIds = mine.flatMap((a) => a.attempts.map((t) => t.notification_id)).filter(Boolean);
+  const idsKey = notificationIds.join(',');
+  const { data: deliveries } = useLiveQuery(idsKey || null, () => api.fetchDeliveries(idsKey.split(',')), ['notification_deliveries']);
+  const byNotification = (deliveries || []).reduce((acc, d) => ({ ...acc, [d.notification_id]: [...(acc[d.notification_id] || []), d] }), {});
 
   return (
     <div className="space-y-3.5">
@@ -96,7 +109,15 @@ export default function AlertPanel() {
                   Acknowledged by {acked} of {total}
                   {acked > 0 && ` (${a.recipients.filter((r) => r.acknowledged_at).map((r) => nameOf(r.recipient_id)).join(', ')})`}
                 </li>
-                <li>Friends are notified inside TukoSafe only. No SMS or email is sent. Emergency services were not contacted.</li>
+                {a.attempts.map((t) => (
+                  <li key={t.notification_id} className="pl-4">
+                    {nameOf(t.recipient_id)}: in-app {t.status === 'delivered' ? 'received' : 'recorded, device not confirmed'}
+                    {(byNotification[t.notification_id] || []).map((d) => (
+                      <span key={d.channel}> · {CHANNEL_LABEL[d.channel]}: <b className={d.status === 'failed' ? 'text-red' : ''}>{STATUS_LABEL[d.status]}</b></span>
+                    ))}
+                  </li>
+                ))}
+                <li>Emergency services were not contacted. Push, email and SMS happen only if your friend turned them on and the server has that provider set up.</li>
               </ul>
               {a.status === 'active' && (
                 <div className="flex gap-2 mt-2">

@@ -19,7 +19,7 @@ export function DataProvider({ children }) {
   const [loadError, setLoadError] = useState('');
   const userId = user?.id;
   const toastRef = useRef(showToast);
-  toastRef.current = showToast;
+  useEffect(() => { toastRef.current = showToast; }, [showToast]);
 
   const refreshTrust = useCallback(async () => {
     if (!userId) return;
@@ -44,7 +44,7 @@ export function DataProvider({ children }) {
 
   useEffect(() => {
     if (!userId || !supabase) {
-      setTrust(EMPTY); setNotifications([]); setUnread({});
+      setTrust(EMPTY); setNotifications([]); setUnread({}); // eslint-disable-line react-hooks/set-state-in-effect
       return undefined;
     }
     refreshAll();
@@ -120,7 +120,7 @@ export function DataProvider({ children }) {
   const closeAlert = useCallback(async (id, status) => { await api.closeAlert(id, status); refreshAlerts(); }, [refreshAlerts]);
 
   useEffect(() => {
-    if (!userId || !supabase) { setAlerts([]); setQueue([]); return undefined; }
+    if (!userId || !supabase) { setAlerts([]); setQueue([]); return undefined; } // eslint-disable-line react-hooks/set-state-in-effect
     syncQueue(); refreshAlerts(); flushQueue();
     const ch = supabase.channel(`alerts:${userId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sos_alerts' }, () => refreshAlerts())

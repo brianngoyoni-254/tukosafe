@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNow } from './useNow';
 import { supabase } from './supabase';
 import { fetchVisibleLocations } from './api';
 
@@ -20,7 +21,7 @@ export function freshness(updatedAt, now = Date.now()) {
 export function useSharedLocations(userId, names = {}) {
   const [rows, setRows] = useState([]);
   const [error, setError] = useState('');
-  const [now, setNow] = useState(Date.now());
+  const now = useNow(15_000);
 
   const load = useCallback(async () => {
     try {
@@ -32,14 +33,13 @@ export function useSharedLocations(userId, names = {}) {
 
   useEffect(() => {
     if (!userId || !supabase) return undefined;
-    load();
+    load(); // eslint-disable-line react-hooks/set-state-in-effect
     const ch = supabase.channel(`locations:${userId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'live_locations' }, () => load())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'location_shares', filter: `viewer_id=eq.${userId}` }, () => load())
       .subscribe((s) => { if (s === 'SUBSCRIBED') load(); });
     const poll = setInterval(load, 30_000);
-    const tick = setInterval(() => setNow(Date.now()), 15_000);
-    return () => { supabase.removeChannel(ch); clearInterval(poll); clearInterval(tick); };
+    return () => { supabase.removeChannel(ch); clearInterval(poll); };
   }, [userId, load]);
 
   const people = rows.map((r) => ({

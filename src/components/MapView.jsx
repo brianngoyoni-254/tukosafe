@@ -27,6 +27,7 @@ function MapController({ pos }) {
     if (pos) {
       map.flyTo([pos.lat, pos.lng], 15, { duration: 1.2 });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pos?.lat, pos?.lng, map]);
   return null;
 }

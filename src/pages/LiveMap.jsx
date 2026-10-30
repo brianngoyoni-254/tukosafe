@@ -1,21 +1,17 @@
-import { useEffect, useState } from 'react';
-import { LuMapPin, LuRefreshCw, LuRadio, LuSquare, LuPause, LuPlay, LuExternalLink } from 'react-icons/lu';
+import { useEffect, useRef, useState } from 'react';
+import { LuMapPin, LuRadio, LuSquare, LuPause, LuPlay, LuExternalLink } from 'react-icons/lu';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useSharedLocations } from '../lib/useSharedLocations';
+import { useNow } from '../lib/useNow';
 import MapView from '../components/MapView';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { formatCoords, compassLabel, formatTime, mapsLink } from '../lib/format';
 
 function useCountdown(endsAt) {
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    if (!endsAt) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [endsAt]);
+  const now = useNow(1000);
   if (!endsAt) return null;
   const ms = Math.max(0, endsAt - now);
   const m = Math.floor(ms / 60_000);
@@ -25,7 +21,7 @@ function useCountdown(endsAt) {
 
 export default function LiveMap() {
   const {
-    pos, locate, useDemoLocation,
+    pos, locate,
     live, liveEndsAt, startLive, stopLive, locating, geoError,
     paused, setSharingPaused, myShares, lastSent, resumeSending,
   } = useApp();
@@ -34,20 +30,21 @@ export default function LiveMap() {
 
   const [duration, setDuration] = useState(60);
   const [picked, setPicked] = useState([]);
-  const [autoTried, setAutoTried] = useState(false);
+  const autoTried = useRef(false);
   const remaining = useCountdown(liveEndsAt);
+  const now = useNow(15_000);
 
   const names = Object.fromEntries(contacts.map((c) => [c.id, c.name]));
   const { people, error: sharedError } = useSharedLocations(user.id, names);
-  const sharingElsewhere = !live && myShares.some((s) => s.status === 'active' && new Date(s.expires_at) > new Date());
+  const sharingElsewhere = !live && myShares.some((s) => s.status === 'active' && new Date(s.expires_at).getTime() > now);
 
   // Auto-locate once on mount
   useEffect(() => {
-    if (!autoTried && !pos) {
-      setAutoTried(true);
+    if (!autoTried.current && !pos) {
+      autoTried.current = true;
       locate();
     }
-  }, [autoTried, pos, locate]);
+  }, [pos, locate]);
 
   return (
     <>
@@ -81,7 +78,7 @@ export default function LiveMap() {
                 : pos
                 ? live
                   ? `Live updates on. Updating every few seconds. Ends in ${remaining || '…'}.`
-                  : 'Located. Your share message is ready below.'
+                  : 'Located. Only you can see this until you start sharing.'
                 : 'Press “Locate me” to find your position.'}
             </div>
           </div>
@@ -107,9 +104,6 @@ export default function LiveMap() {
               <div className="flex flex-wrap gap-2.5 mt-3">
                 <Button onClick={locate} disabled={locating}>
                   <LuMapPin size={16} /> {locating ? 'Locating…' : 'Locate me'}
-                </Button>
-                <Button variant="outline" onClick={useDemoLocation}>
-                  <LuRefreshCw size={16} /> Use demo location
                 </Button>
               </div>
             </Card>

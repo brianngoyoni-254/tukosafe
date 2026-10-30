@@ -15,6 +15,7 @@ export default function PhoneMockup() {
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (reduced) { setI(2); return; }
     const id = setInterval(() => setI((x) => (x + 1) % 3), 4200);
     return () => clearInterval(id);

@@ -108,6 +108,24 @@ do $$ begin
   raise notice 'PASS: arriving safely after an overdue alert notifies contacts';
 end $$;
 
+-- Reminder goes to the traveller first; extending the ETA re-arms it and is rejected once escalated.
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
+do $$ begin
+  if (select count(*) from public.notifications where type = 'checkin' and title = 'Are you home safe?') <> 1 then
+    raise exception 'FAIL: traveller got no server-side reminder'; end if;
+  raise notice 'PASS: traveller is reminded by the server at the due time';
+end $$;
+insert into t select 'p2', public.create_return_plan('Karen', now() + interval '1 hour', 10, array['00000000-0000-0000-0000-0000000000a2'::uuid]);
+select public.start_return_plan((select id from t where k='p2'));
+select public.extend_return_plan((select id from t where k='p2'), 30);
+do $$ begin
+  if (select expected_arrival from public.return_home_plans where id = (select id from t where k='p2')) < now() + interval '85 minutes' then
+    raise exception 'FAIL: ETA not extended'; end if;
+  begin perform public.extend_return_plan((select id from t where k='p1'), 30);
+        raise exception 'FAIL: extended an arrived journey'; exception when others then if sqlerrm like 'FAIL%' then raise; end if; end;
+  raise notice 'PASS: ETA extension works only for active journeys';
+end $$;
+
 -- Contacts that were not designated never learn about the journey.
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a3","role":"authenticated"}', true);
 do $$ begin

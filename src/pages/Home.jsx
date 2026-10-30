@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
-import { LuHouse, LuCircleAlert, LuUsers, LuMap, LuMessageCircle, LuShieldCheck, LuFileText, LuCompass, LuArrowRight } from 'react-icons/lu';
+import { LuHouse, LuCircleAlert, LuUsers, LuMap, LuMessageCircle, LuShieldCheck, LuCompass } from 'react-icons/lu';
+import { useAuth } from '../context/AuthContext';
+import Dashboard from './Dashboard';
 import Button from '../components/ui/Button';
 import PhoneMockup from '../components/PhoneMockup';
 
@@ -18,6 +20,13 @@ const STEPS = [
 ];
 
 export default function Home() {
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <div className="min-h-[60vh]" aria-busy="true" />;
+  // Signed-in users see their own data; the marketing page (with illustrative copy) is for visitors only.
+  return isAuthenticated ? <Dashboard /> : <MarketingHome />;
+}
+
+function MarketingHome() {
   return (
     <>
       <section className="relative overflow-hidden bg-deep text-white pt-14 pb-32">

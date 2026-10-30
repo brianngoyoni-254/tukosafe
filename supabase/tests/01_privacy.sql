@@ -138,7 +138,7 @@ do $$ declare extra text; begin
       'update_contact_prefs','list_blocked','send_message','mark_messages_delivered','mark_conversation_read',
       'start_location_share','set_share_status','push_location','create_outing','invite_to_outing','respond_outing',
       'set_outing_consent','leave_outing','remove_outing_member','end_outing','update_outing','delete_outing',
-      'create_return_plan','start_return_plan','plan_checkin','arrive_safely','cancel_return_plan',
+      'extend_return_plan','create_return_plan','start_return_plan','plan_checkin','arrive_safely','cancel_return_plan',
       'create_alert','ack_alert','close_alert','delete_my_account',
       'save_push_subscription','remove_push_subscription','set_notification_prefs');
   if extra is not null then raise exception 'FAIL: unexpected executable functions for authenticated: %', extra; end if;

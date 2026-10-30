@@ -4,7 +4,7 @@ import {
   LuHouse, LuMap, LuUsers, LuMessageCircle, LuLifeBuoy,
   LuBookOpen, LuShieldCheck, LuInfo, LuPhone, LuCircleAlert,
   LuMenu, LuX, LuChevronRight, LuLogIn, LuLogOut, LuUser,
-  LuSettings, LuArrowLeft, LuChevronDown,
+  LuSettings, LuChevronDown,
 } from 'react-icons/lu';
 import { useAuth } from '../context/AuthContext';
 import Toast from './Toast';
@@ -35,6 +35,8 @@ export default function Layout({ children }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  // Close menus when the route changes (sync with an external router event).
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setMobileOpen(false); setUserMenuOpen(false); }, [pathname]);
 
   // Lock body scroll while drawer is open

@@ -16,13 +16,13 @@ export async function fetchTrust(userId) {
     supabase.rpc('list_blocked'),
   ]);
   return {
-    contacts: unwrap(contacts).map((c) => ({
+    contacts: (unwrap(contacts) || []).map((c) => ({
       id: c.contact_id, name: c.profile?.display_name || 'Unknown', email: c.profile?.email,
       phone: c.profile?.phone, receivesSos: c.receives_sos, receivesCheckins: c.receives_checkins,
       since: c.created_at,
     })),
-    invitations: unwrap(invites),
-    blocked: unwrap(blocked),
+    invitations: unwrap(invites) || [],
+    blocked: unwrap(blocked) || [],
   };
 }
 
@@ -74,7 +74,7 @@ export const ackAlert = (id) => rpc('ack_alert', { p_alert: id });
 export const closeAlert = (id, status) => rpc('close_alert', { p_alert: id, p_status: status });
 export async function fetchAlerts() {
   return unwrap(await supabase.from('sos_alerts')
-    .select('*, sender:profiles!sos_alerts_sender_id_fkey(display_name), recipients:sos_recipients(recipient_id, acknowledged_at), attempts:delivery_attempts(recipient_id, status, confirmed_at)')
+    .select('*, sender:profiles!sos_alerts_sender_id_fkey(display_name), recipients:sos_recipients(recipient_id, acknowledged_at), attempts:delivery_attempts(recipient_id, notification_id, status, confirmed_at)')
     .order('created_at', { ascending: false }).limit(20));
 }
 
@@ -107,10 +107,14 @@ export const setOutingConsent = (outing, share) => rpc('set_outing_consent', { p
 export const leaveOuting = (outing) => rpc('leave_outing', { p_outing: outing });
 export const removeOutingMember = (outing, user) => rpc('remove_outing_member', { p_outing: outing, p_user: user });
 export const endOuting = (outing) => rpc('end_outing', { p_outing: outing });
+export const updateOuting = ({ id, title, venue, startsAt, endsAt }) =>
+  rpc('update_outing', { p_outing: id, p_title: title, p_venue: venue, p_starts: startsAt, p_ends: endsAt });
+export const deleteOuting = (outing) => rpc('delete_outing', { p_outing: outing });
 
 // ── Return-home plans ──
 export async function fetchPlans() {
-  return unwrap(await supabase.from('return_home_plans').select('*').order('created_at', { ascending: false }).limit(10));
+  // RLS returns my plans plus plans of people who designated me.
+  return unwrap(await supabase.from('return_home_plans').select('*').order('created_at', { ascending: false }).limit(30));
 }
 export const createReturnPlan = ({ destination, expected, grace, notify }) =>
   rpc('create_return_plan', { p_destination: destination, p_expected: expected, p_grace: grace, p_notify: notify });
@@ -118,3 +122,23 @@ export const startReturnPlan = (id) => rpc('start_return_plan', { p_plan: id });
 export const planCheckin = (id, note) => rpc('plan_checkin', { p_plan: id, p_note: note || null });
 export const arriveSafely = (id) => rpc('arrive_safely', { p_plan: id });
 export const cancelReturnPlan = (id) => rpc('cancel_return_plan', { p_plan: id });
+export const extendReturnPlan = (id, minutes) => rpc('extend_return_plan', { p_plan: id, p_minutes: minutes });
+export async function fetchCheckins(planId) {
+  return unwrap(await supabase.from('checkins').select('*').eq('plan_id', planId).order('created_at', { ascending: false }));
+}
+
+// ── Notification channels ──
+export async function fetchPrefs(userId) {
+  const row = unwrap(await supabase.from('notification_prefs').select('*').eq('user_id', userId).maybeSingle());
+  return row || { push: true, email: false, sms: false };
+}
+export const setPrefs = ({ push, email, sms }) =>
+  rpc('set_notification_prefs', { p_push: push, p_email: email, p_sms: sms });
+export const savePushSubscription = (sub) =>
+  rpc('save_push_subscription', { p_endpoint: sub.endpoint, p_p256dh: sub.p256dh, p_auth: sub.auth, p_ua: navigator.userAgent });
+export const removePushSubscription = (endpoint) => rpc('remove_push_subscription', { p_endpoint: endpoint });
+export async function fetchDeliveries(notificationIds) {
+  if (!notificationIds.length) return [];
+  return unwrap(await supabase.from('notification_deliveries')
+    .select('notification_id, user_id, channel, status').in('notification_id', notificationIds));
+}
