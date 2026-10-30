@@ -1,31 +1,124 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0c2b27;
-  --color-mut: #53706b;
-  --color-line: #d5e2df;
-  --color-teal: #0f5d56;
-  --color-teal2: #1c8277;
-  --color-mint: #e3f1ee;
+  /* ---- Theme 1: Harbor — deep navy-blue trust & protection (default) ---- */
+  --color-deep: #0f2a3e;
+  --color-bg: #f1f5f9;
+  --color-surface: #ffffff;
+  --color-ink: #0f2a3e;
+  --color-mut: #475569;
+  --color-line: #cbd5e1;
+  --color-accent: #1d6fa5;
+  --color-accentbg: #e0f2fc;
+  --color-safe: #15803d;
+  --color-safebg: #dcfce7;
+  --color-alert: #c0372d;
+  --color-alertbg: #fde7e4;
+  --color-teal: #0f6f8f;
+  --color-teal2: #2a93ad;
+  --color-mint: #e0f2fc;
   --color-amber: #b36b00;
   --color-amberbg: #fff1d6;
   --color-red: #c0372d;
   --color-redbg: #fde7e4;
-  --color-green: #17693a;
-  --color-greenbg: #dff3e6;
-  --color-deep: #072724;
-  --color-mapbg: #eaf2f0;
-  --color-mapln: #cddcd8;
+  --color-green: #15803d;
+  --color-greenbg: #dcfce7;
+  --color-mapbg: #e0f2fc;
+  --color-mapln: #bae0fd;
   --color-maprd: #ffffff;
 
   --font-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
   --font-body: "DM Sans", "Segoe UI", system-ui, sans-serif;
 }
 
+/* ---- Theme 2: Grove — forest green safe haven ---- */
+[data-theme="grove"] {
+  --color-deep: #143327;
+  --color-bg: #f0f7f1;
+  --color-surface: #ffffff;
+  --color-ink: #143327;
+  --color-mut: #53706b;
+  --color-line: #d5e2df;
+  --color-accent: #2e855a;
+  --color-accentbg: #dff3e6;
+  --color-safe: #2e855a;
+  --color-safebg: #dff3e6;
+  --color-alert: #c0372d;
+  --color-alertbg: #fde7e4;
+  --color-teal: #2e855a;
+  --color-teal2: #4fa07c;
+  --color-mint: #dff3e6;
+  --color-amber: #b36b00;
+  --color-amberbg: #fff1d6;
+  --color-red: #c0372d;
+  --color-redbg: #fde7e4;
+  --color-green: #2e855a;
+  --color-greenbg: #dff3e6;
+  --color-mapbg: #e7f1ea;
+  --color-mapln: #cddcd8;
+  --color-maprd: #ffffff;
+}
+
+/* ---- Theme 3: Coast — teal calm & clarity ---- */
+[data-theme="coast"] {
+  --color-deep: #0f3d3a;
+  --color-bg: #eef6f5;
+  --color-surface: #ffffff;
+  --color-ink: #0f3d3a;
+  --color-mut: #47706b;
+  --color-line: #cddcd8;
+  --color-accent: #0f8b80;
+  --color-accentbg: #dff1ee;
+  --color-safe: #17693a;
+  --color-safebg: #dff3e6;
+  --color-alert: #c0372d;
+  --color-alertbg: #fde7e4;
+  --color-teal: #0f8b80;
+  --color-teal2: #2aa8a0;
+  --color-mint: #dff1ee;
+  --color-amber: #b36b00;
+  --color-amberbg: #fff1d6;
+  --color-red: #c0372d;
+  --color-redbg: #fde7e4;
+  --color-green: #17693a;
+  --color-greenbg: #dff3e6;
+  --color-mapbg: #e4edee;
+  --color-mapln: #cddcd8;
+  --color-maprd: #ffffff;
+}
+
+/* ---- Theme 4: Ember — warm terracotta human connection ---- */
+[data-theme="ember"] {
+  --color-deep: #4a2a1e;
+  --color-bg: #faf6f0;
+  --color-surface: #ffffff;
+  --color-ink: #4a2a1e;
+  --color-mut: #8a6a55;
+  --color-line: #e8dccf;
+  --color-accent: #b36b00;
+  --color-accentbg: #fff1d6;
+  --color-safe: #2e855a;
+  --color-safebg: #dff3e6;
+  --color-alert: #c0372d;
+  --color-alertbg: #fde7e4;
+  --color-teal: #2e855a;
+  --color-teal2: #4fa07c;
+  --color-mint: #fff1d6;
+  --color-amber: #b36b00;
+  --color-amberbg: #fff1d6;
+  --color-red: #c0372d;
+  --color-redbg: #fde7e4;
+  --color-green: #2e855a;
+  --color-greenbg: #dff3e6;
+  --color-mapbg: #f3e9dd;
+  --color-mapln: #e8dccf;
+  --color-maprd: #ffffff;
+}
+
 @layer base {
   html { scroll-behavior: smooth; }
   body {
-    background: #f4f8f7;
+    background: var(--color-bg);
     color: var(--color-ink);
     font-family: var(--font-body);
     line-height: 1.55;
@@ -39,6 +132,11 @@
   :focus-visible {
     outline: 3px solid var(--color-amber);
     outline-offset: 2px;
+  }
+  [data-theme="grove"] :focus-visible,
+  [data-theme="coast"] :focus-visible,
+  [data-theme="ember"] :focus-visible {
+    outline-color: var(--color-accent);
   }
 }
 
