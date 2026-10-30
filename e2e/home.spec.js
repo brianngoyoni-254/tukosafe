@@ -6,7 +6,9 @@ const WIDTHS = [1440, 1280, 1024, 768, 375];
 
 async function openHome(page, width = 1440, height = 1000, { clock = false } = {}) {
   await page.setViewportSize({ width, height });
-  if (clock) await page.clock.install();
+  // Freeze time BEFORE the page loads: otherwise real time keeps ticking while a slow machine renders the hero,
+  // and the 6 s autoplay window gets eaten before the test starts measuring. runFor() then advances it deterministically.
+  if (clock) { await page.clock.install({ time: 0 }); await page.clock.pauseAt(1000); }
   await page.goto('/');
   await expect(page.locator('.phone')).toBeVisible();
 }
