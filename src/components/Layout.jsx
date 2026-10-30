@@ -1,13 +1,12 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import {
   LuHouse, LuMap, LuUsers, LuMessageCircle, LuLifeBuoy,
   LuBookOpen, LuShieldCheck, LuInfo, LuPhone, LuCircleAlert,
-  LuMenu, LuX,
+  LuMenu, LuX, LuChevronRight, LuLogIn, LuLogOut, LuUser,
+  LuSettings, LuArrowLeft, LuChevronDown,
 } from 'react-icons/lu';
-import { useApp } from '../context/app-context';
-import { THEMES, THEME_MARK } from '../data/themes';
-import Logo from './Logo';
+import { useAuth } from '../context/AuthContext';
 import Toast from './Toast';
 
 const PRIMARY_NAV = [
@@ -61,32 +60,80 @@ function ThemeSelector({ theme, setTheme }) {
 
 export default function Layout({ children }) {
   const { pathname } = useLocation();
-  const { theme, setTheme } = useApp();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => { setMobileOpen(false); setUserMenuOpen(false); }, [pathname]);
+
+  // Lock body scroll while drawer is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
+
+  // Close menus on Escape
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') { setMobileOpen(false); setUserMenuOpen(false); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    const onClick = (e) => {
+      if (!e.target.closest('[data-user-menu]')) setUserMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [userMenuOpen]);
+
+  const handleLogout = () => {
+    logout();
+    setUserMenuOpen(false);
+    setMobileOpen(false);
+    navigate('/');
+  };
+
+  const initials = user
+    ? (user.name || 'U').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    : '';
 
   return (
     <div className="min-h-screen flex flex-col bg-surface text-ink font-body">
       {/* ============ HEADER ============ */}
       <header className="sticky top-0 z-40 bg-deep/95 backdrop-blur-md border-b border-white/10">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="h-16 flex items-center justify-between gap-6">
+          <div className="h-16 flex items-center justify-between gap-4">
 
-            {/* Brand */}
-            <Link
-              to="/"
-              className="flex items-center gap-2.5 shrink-0 text-white no-underline group"
-              aria-label="TukoSafe home"
-            >
-              <Logo className="shrink-0" />
-            </Link>
+            {/* LEFT: mobile hamburger + brand */}
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setMobileOpen((v) => !v)}
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileOpen}
+                className="lg:hidden w-10 h-10 -ml-2 grid place-items-center rounded-lg text-white hover:bg-white/10 transition"
+              >
+                {mobileOpen ? <LuX size={22} /> : <LuMenu size={22} />}
+              </button>
 
-            {/* Desktop nav */}
+              <Link
+                to="/"
+                className="flex items-center gap-2.5 text-white no-underline group"
+                aria-label="TukoSafe home"
+              >
+                <span className="w-8 h-8 rounded-[50%_50%_50%_4px] bg-amber -rotate-45 inline-block transition-transform group-hover:rotate-[-30deg]" />
+                <span className="font-display font-extrabold text-xl tracking-tight">TukoSafe</span>
+              </Link>
+            </div>
+
+            {/* CENTER: desktop nav */}
             <nav className="hidden lg:flex items-center gap-1 flex-1 justify-center" aria-label="Main">
               {PRIMARY_NAV.map(({ to, label, icon: Icon }) => {
                 const active = pathname === to;
@@ -111,27 +158,130 @@ export default function Layout({ children }) {
               })}
             </nav>
 
-            {/* Right actions (desktop) */}
-            <div className="hidden lg:flex items-center gap-2.5">
-              <ThemeSelector theme={theme} setTheme={setTheme} />
-              <Link to="/about" className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-semibold text-[#bfe0da] hover:text-white hover:bg-white/5 no-underline transition-colors">About</Link>
-              <Link to="/help" className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-amber text-[#1b1200] font-bold text-sm no-underline hover:brightness-105 transition"><LuHouse size={14} /> Get Me Home</Link>
-            </div>
+            {/* RIGHT: emergency + auth */}
+            <div className="hidden lg:flex items-center gap-2.5 shrink-0">
+              <a
+                href="tel:999"
+                className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-semibold text-[#bfe0da] hover:text-white hover:bg-white/5 no-underline transition-colors"
+                aria-label="Call 999"
+              >
+                <LuPhone size={14} />
+                999
+              </a>
 
-            {/* Mobile menu button */}
-            <button onClick={() => setMobileOpen((o) => !o)} className="lg:hidden w-10 h-10 grid place-items-center rounded-lg bg-white/10 text-white hover:bg-white/15 transition" aria-expanded={mobileOpen} aria-label="Open menu">{mobileOpen ? <LuX size={20} /> : <LuMenu size={20} />}</button>
+              {isAuthenticated ? (
+                <div className="relative" data-user-menu>
+                  <button
+                    type="button"
+                    onClick={() => setUserMenuOpen((v) => !v)}
+                    aria-expanded={userMenuOpen}
+                    aria-haspopup="menu"
+                    className="inline-flex items-center gap-2 h-9 pl-1.5 pr-3 rounded-lg text-sm font-semibold text-white hover:bg-white/10 transition-colors"
+                  >
+                    <span className="w-7 h-7 rounded-full bg-amber text-[#1b1200] grid place-items-center font-bold text-xs">
+                      {initials}
+                    </span>
+                    <span className="max-w-[120px] truncate">{user.name}</span>
+                    <LuChevronDown size={14} className={`transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {userMenuOpen && (
+                    <div
+                      role="menu"
+                      className="absolute right-0 mt-2 w-56 rounded-xl bg-white border border-line shadow-[0_18px_50px_rgba(7,39,36,0.15)] overflow-hidden animate-[fadeIn_.15s_ease-out]"
+                    >
+                      <div className="px-4 py-3 border-b border-line bg-[#fafcfb]">
+                        <p className="text-xs text-mut m-0">Signed in as</p>
+                        <p className="text-sm font-bold m-0 truncate">{user.email}</p>
+                      </div>
+                      <div className="p-1.5">
+                        <Link
+                          to="/profile"
+                          role="menuitem"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-ink hover:bg-mint no-underline"
+                        >
+                          <LuUser size={15} /> Profile
+                        </Link>
+                        <Link
+                          to="/profile"
+                          role="menuitem"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-ink hover:bg-mint no-underline"
+                        >
+                          <LuSettings size={15} /> Settings
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          role="menuitem"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red hover:bg-redbg transition-colors"
+                        >
+                          <LuLogOut size={15} /> Sign out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-semibold text-[#bfe0da] hover:text-white hover:bg-white/5 no-underline transition-colors"
+                  >
+                    <LuLogIn size={14} /> Sign in
+                  </Link>
+                  <Link
+                    to="/help"
+                    className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-amber text-[#1b1200] font-bold text-sm no-underline hover:brightness-105 transition"
+                  >
+                    <LuHouse size={15} />
+                    Get Me Home
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Mobile menu overlay */}
-        {mobileOpen && (
-          <>
-            <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setMobileOpen(false)} aria-hidden="true" />
-            <nav className="fixed top-16 right-0 bottom-0 z-50 w-[300px] max-w-[85vw] bg-deep text-white lg:hidden overflow-y-auto border-l border-white/10 shadow-2xl">
-              <div className="p-4">
-                <div className="flex items-center gap-2.5 mb-8"><Logo className="shrink-0" /></div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-[#8fb9b2] mb-6 px-2">Main</p>
-                <ul className="space-y-1 p-0 m-0 list-none">
+      {/* ============ MOBILE DRAWER (slides from LEFT) ============ */}
+      {mobileOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+          />
+          <aside
+            className="fixed top-16 left-0 bottom-0 z-50 w-[300px] max-w-[85vw] bg-deep text-white lg:hidden overflow-y-auto border-r border-white/10 shadow-2xl animate-[slideIn_.2s_ease-out]"
+            role="dialog"
+            aria-label="Menu"
+          >
+            <div className="p-4 space-y-6">
+              {/* User card (mobile) */}
+              {isAuthenticated ? (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                  <span className="w-10 h-10 rounded-full bg-amber text-[#1b1200] grid place-items-center font-bold text-sm">
+                    {initials}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold m-0 truncate">{user.name}</p>
+                    <p className="text-xs text-[#8fb9b2] m-0 truncate">{user.email}</p>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center justify-center gap-2 h-11 rounded-lg bg-amber text-[#1b1200] font-bold text-sm no-underline"
+                >
+                  <LuLogIn size={16} /> Sign in
+                </Link>
+              )}
+
+              {/* Primary */}
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[#8fb9b2] mb-2 px-2">
+                  Navigation
+                </p>
+                <nav className="space-y-0.5">
                   {PRIMARY_NAV.map(({ to, label, icon: Icon }) => {
                     const active = pathname === to;
                     return (
@@ -161,17 +311,46 @@ export default function Layout({ children }) {
                   <Link to="/help" className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-lg border-2 border-white/20 text-white font-bold text-sm no-underline"><LuCircleAlert size={15} /> SOS</Link>
                 </div>
               </div>
-            </nav>
-          </>
-        )}
-      </header>
+
+              {/* Sign out (mobile) */}
+              {isAuthenticated && (
+                <div className="pt-2 border-t border-white/10">
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-2 h-11 rounded-lg border-2 border-white/20 text-white font-bold text-sm hover:bg-white/5 transition"
+                  >
+                    <LuLogOut size={16} /> Sign out
+                  </button>
+                </div>
+              )}
+
+              {/* Emergency CTA */}
+              <div className="pt-2 border-t border-white/10 space-y-2">
+                <Link
+                  to="/help"
+                  className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-lg bg-amber text-[#1b1200] font-bold text-sm no-underline"
+                >
+                  <LuHouse size={16} /> Get Me Home
+                </Link>
+                <a
+                  href="tel:999"
+                  className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-lg border-2 border-white/20 text-white font-bold text-sm no-underline"
+                >
+                  <LuPhone size={16} /> Call 999
+                </a>
+              </div>
+            </div>
+          </aside>
+        </>
+      )}
 
       <main className="flex-1">{children}</main>
 
       {/* ============ FOOTER ============ */}
       <footer className="bg-deep text-[#bfe0da] mt-10">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid gap-8 md:grid-cols-[2fr_1fr_1fr]">
+          <div className="grid gap-8 md:grid-cols-[2fr_1fr_1fr_1fr]">
             <div>
               <Link to="/" className="inline-flex items-center gap-2.5 text-white no-underline mb-3"><Logo className="shrink-0" /></Link>
               <p className="text-sm max-w-[40ch] m-0">From the Swahili <i>tuko salama</i>, “we are safe”. Go out. Have fun. Get home safe.</p>
@@ -186,6 +365,30 @@ export default function Layout({ children }) {
               </ul>
             </div>
             <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#8fb9b2] mb-3">Account</p>
+              <ul className="space-y-2 text-sm list-none p-0 m-0">
+                {isAuthenticated ? (
+                  <>
+                    <li><Link to="/profile" className="text-[#bfe0da] hover:text-white no-underline">Profile</Link></li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="text-[#bfe0da] hover:text-white no-underline bg-transparent border-0 p-0 cursor-pointer text-sm"
+                      >
+                        Sign out
+                      </button>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li><Link to="/login" className="text-[#bfe0da] hover:text-white no-underline">Sign in</Link></li>
+                    <li><Link to="/signup" className="text-[#bfe0da] hover:text-white no-underline">Create account</Link></li>
+                  </>
+                )}
+              </ul>
+            </div>
+            <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-[#8fb9b2] mb-3">Emergency</p>
               <ul className="space-y-2 text-sm list-none p-0 m-0">
                 <li><a href="tel:999" className="text-[#bfe0da] hover:text-white no-underline">Call 999</a></li>
@@ -196,7 +399,10 @@ export default function Layout({ children }) {
             </div>
           </div>
           <div className="mt-8 pt-6 border-t border-white/10 text-xs opacity-80">
-            <p className="m-0">Prototype only: AI examples, contacts, messages, location sharing and transport are simulated or local previews. Nothing is sent to friends or responders. TukoSafe is not an emergency service; call 999 or 112 if you need emergency help.</p>
+            <p className="m-0">
+              TukoSafe is not an emergency service. Notifying friends is not dispatching responders.
+              Prototype build. Status colours are not a guarantee.
+            </p>
           </div>
         </div>
       </footer>
