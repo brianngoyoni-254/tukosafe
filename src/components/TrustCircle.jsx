@@ -3,7 +3,7 @@ import { LuUserPlus, LuCheck, LuX, LuMessageCircle, LuUserMinus, LuBan, LuMail, 
 import * as api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Toggle from './ui/Toggle';

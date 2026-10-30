@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import * as api from '../lib/api';
 import * as alertQueue from '../lib/alertQueue';
 import { useAuth } from './AuthContext';
-import { useApp } from './AppContext';
+import { useApp } from './app-context';
 
 const DataContext = createContext(null);
 

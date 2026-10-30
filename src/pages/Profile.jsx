@@ -4,7 +4,7 @@ import * as api from '../lib/api';
 import { currentSubscription, enablePush, disablePush, pushSupported, pushConfigured } from '../lib/push';
 import Toggle from '../components/ui/Toggle';
 import { useAuth } from '../context/AuthContext';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 

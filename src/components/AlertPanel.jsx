@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { LuTriangleAlert, LuCheck, LuClock, LuMapPin } from 'react-icons/lu';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 import * as api from '../lib/api';
 import { useLiveQuery } from '../lib/useLiveQuery';
 import Card from './ui/Card';

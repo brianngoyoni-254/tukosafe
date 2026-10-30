@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { LuCheck, LuClock, LuTriangleAlert, LuCalendarClock, LuX, LuPlay } from 'react-icons/lu';
 import * as api from '../lib/api';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useLiveQuery } from '../lib/useLiveQuery';

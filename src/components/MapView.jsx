@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 
 // Fix Leaflet's default marker icon paths (Vite bundling issue)
 delete L.Icon.Default.prototype._getIconUrl;

@@ -3,7 +3,7 @@ import {
   LuLightbulb, LuUserRound, LuMapPin, LuCar, LuLifeBuoy,
   LuCircleAlert, LuCircleCheck, LuX,
 } from 'react-icons/lu';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { useData } from '../context/DataContext';
@@ -96,7 +96,7 @@ export default function GetHelp() {
     <>
       <div className="relative overflow-hidden bg-deep text-white pt-11 pb-20">
         <div className="max-w-[1120px] mx-auto px-5 relative">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-[#bfe0da] text-sm mb-3">
+          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 text-white/90 text-sm mb-3">
             <span className="w-2 h-2 rounded-full bg-amber animate-[blink_1.6s_infinite]" />
             Get help
           </span>
@@ -262,7 +262,7 @@ export default function GetHelp() {
 
           <Card className="text-center">
             <h3 className="font-display font-extrabold text-lg m-0">SOS</h3>
-            <p className="text-mut text-sm mt-1">Press and hold for 3 seconds. Release to cancel.</p>
+            <p className="text-mut text-sm mt-1">Hold for 3 seconds to preview the SOS state. No contact is notified.</p>
             <SosButton />
             <div className="flex justify-center gap-2.5 mt-4">
               <Button variant="amber" href="tel:999">Call 999</Button>

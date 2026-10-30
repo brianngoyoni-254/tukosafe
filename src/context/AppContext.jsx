@@ -1,13 +1,25 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from './AuthContext';
+import { AppContext } from './app-context';
 import * as api from '../lib/api';
 import { createSupportReference } from '../lib/ai';
 
-const AppContext = createContext(null);
 const LS_KEY = 'tukosafe.support.requests';
+const THEME_IDS = ['harbor', 'grove', 'coast', 'ember'];
 
 export function AppProvider({ children }) {
   const { user: authUser } = useAuth();
+  const [theme, setTheme] = useState(() => {
+    try {
+      const t = localStorage.getItem('tukosafe:theme');
+      if (t && THEME_IDS.includes(t)) return t;
+    } catch { /* storage blocked */ }
+    return 'harbor';
+  });
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem('tukosafe:theme', theme); } catch { /* storage blocked */ }
+  }, [theme]);
   const user = useMemo(() => authUser || { name: 'You' }, [authUser]);
   const [lang, setLang] = useState('en');
   const [ai, setAi] = useState({ checkin: true, copilot: true, brief: true });
@@ -208,21 +220,14 @@ export function AppProvider({ children }) {
   }, [showToast]);
 
   const value = useMemo(() => ({
-    user, lang, setLang, ai, setAi, aiFail, setAiFail,
+    user, theme, setTheme, lang, setLang, ai, setAi, aiFail, setAiFail,
     flags, flag, pos, locate,
     toast, showToast, supportRequests, requestSupport,
     live, liveEndsAt, locating, geoError, startLive, stopLive,
     paused, setSharingPaused, myShares, lastSent, resumeSending, refreshShares,
-  }), [user, lang, ai, aiFail, flags, flag, pos, locate, toast, showToast, supportRequests, requestSupport,
+  }), [user, theme, lang, ai, aiFail, flags, flag, pos, locate, toast, showToast, supportRequests, requestSupport,
     live, liveEndsAt, locating, geoError, startLive, stopLive, paused, setSharingPaused, myShares, lastSent,
     resumeSending, refreshShares]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
-export function useApp() {
-  const ctx = useContext(AppContext);
-  if (!ctx) throw new Error('useApp must be used inside AppProvider');
-  return ctx;
 }
