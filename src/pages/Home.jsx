@@ -67,13 +67,14 @@ function MarketingHome() {
               Demo actions do not send alerts, messages, or location updates.
             </p>
           </div>
-          <div className="relative grid place-items-center min-h-[520px]">
-            <div className="relative w-[460px] h-[460px] hidden md:block">
+          {/* Phone: stacks under the text on mobile, sits on the right from tablet up. */}
+          <div className="relative flex justify-center items-center py-6 md:py-0 md:min-h-[600px]">
+            <div className="absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 w-[440px] h-[440px] hidden md:block pointer-events-none" aria-hidden="true">
               <span className="absolute inset-0 rounded-full border border-accent/40 animate-[pulse-ring_6s_ease-out_infinite]" />
               <span className="absolute inset-0 rounded-full border border-accent/25 animate-[pulse-ring_6s_ease-out_infinite_2s]" />
               <span className="absolute inset-0 rounded-full border border-accent/15 animate-[pulse-ring_6s_ease-out_infinite_4s]" />
             </div>
-            <div className="absolute md:static">
+            <div className="relative z-10 w-full">
               <PhoneMockup />
             </div>
           </div>

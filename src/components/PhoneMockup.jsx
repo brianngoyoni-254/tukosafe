@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { LuCheck, LuTriangleAlert } from 'react-icons/lu';
+import { LuCheck, LuTriangleAlert, LuClock } from 'react-icons/lu';
 import { useApp } from '../context/app-context';
 import { CHECKIN_TEMPLATES } from '../data/dummy';
+import './phone.css';
 
 const CAPTIONS = [
   'Sample check-in in your selected language',
@@ -9,82 +10,157 @@ const CAPTIONS = [
   'Preview a scripted contact brief',
 ];
 
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function StatusBar() {
+  return (
+    <div className="phone-status" aria-hidden="true">
+      <span className="phone-time">9:41</span>
+      <span className="phone-status-icons">
+        <svg viewBox="0 0 18 12" width="1.25em" height="0.85em" fill="currentColor">
+          <rect x="0" y="8" width="3" height="4" rx="0.8" />
+          <rect x="5" y="5.5" width="3" height="6.5" rx="0.8" />
+          <rect x="10" y="3" width="3" height="9" rx="0.8" />
+          <rect x="15" y="0" width="3" height="12" rx="0.8" />
+        </svg>
+        <svg viewBox="0 0 16 12" width="1.1em" height="0.85em" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+          <path d="M1 4.2a10 10 0 0 1 14 0" />
+          <path d="M3.6 6.9a6.2 6.2 0 0 1 8.8 0" />
+          <path d="M6.2 9.5a2.4 2.4 0 0 1 3.6 0" />
+        </svg>
+        <svg viewBox="0 0 27 12" width="1.75em" height="0.85em" fill="none">
+          <rect x="0.5" y="0.5" width="22" height="11" rx="3.2" stroke="currentColor" opacity="0.45" />
+          <rect x="2" y="2" width="17" height="8" rx="2" fill="currentColor" />
+          <rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" opacity="0.45" />
+        </svg>
+      </span>
+    </div>
+  );
+}
+
 export default function PhoneMockup() {
   const { lang, ai } = useApp();
-  const [i, setI] = useState(() =>
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 2 : 0
-  );
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
-    const id = setInterval(() => setI((x) => (x + 1) % 3), 4200);
+    if (prefersReducedMotion() || paused) return undefined;
+    const id = setInterval(() => setI((x) => (x + 1) % 3), 4800);
     return () => clearInterval(id);
-  }, []);
+  }, [paused, i]);
 
   const greeting = ai.checkin
     ? CHECKIN_TEMPLATES[lang]('Wanjiru')
     : 'Check-in due: please confirm you are okay. If something isn’t right, reply “help”.';
 
   const screens = [
-    <div key="s1" className="absolute inset-0 p-5 space-y-3">
-      <h4 className="font-display font-extrabold text-base m-0">Msaidizi</h4>
-      <div className="bg-surface border border-line rounded-[14px_14px_14px_4px] p-3 text-sm">{greeting}</div>
-      <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-accentbg text-accent">
-        {ai.checkin ? 'Scripted example' : 'Fallback example'}
-      </span>
-      <button className="w-full py-3 rounded-xl bg-accent text-white font-bold text-sm inline-flex items-center justify-center gap-1.5 animate-[tap_2s_infinite]">
-        <LuCheck size={16} /> I’m okay
+    <div key="s1" className="phone-slide">
+      <header className="phone-app-head">
+        <span className="phone-app-icon" aria-hidden="true" />
+        <div>
+          <h4>Msaidizi</h4>
+          <small>Check-in · now</small>
+        </div>
+      </header>
+      <div className="phone-bubble">{greeting}</div>
+      <span className="phone-badge phone-badge-accent">{ai.checkin ? 'Scripted example' : 'Fallback example'}</span>
+      <div className="phone-note">
+        <b>Next check-in</b>
+        <span>Tonight, 1:30 AM · every 30 min</span>
+      </div>
+      <div className="phone-spacer" />
+      <button type="button" tabIndex={-1} className="phone-cta">
+        <LuCheck aria-hidden="true" /> I’m okay
       </button>
+      <button type="button" tabIndex={-1} className="phone-cta phone-cta-ghost">Something isn’t right</button>
     </div>,
-    <div key="s2" className="absolute inset-0 p-5 space-y-3">
-      <h4 className="font-display font-extrabold text-base m-0">Check-in overdue</h4>
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amberbg text-amber">
-        <LuTriangleAlert size={12} /> Grace period running
-      </span>
-      <div className="h-2 rounded-full bg-line overflow-hidden">
-        <div className="h-full bg-amber animate-[fill_4s_linear_infinite]" />
-      </div>
-      <div className="bg-surface border border-line rounded-[14px_14px_14px_4px] p-3 text-sm">
-        This demo advances manually. No contact is notified when the grace period ends.
-      </div>
+    <div key="s2" className="phone-slide">
+      <header className="phone-app-head">
+        <span className="phone-app-icon phone-app-icon-warn" aria-hidden="true" />
+        <div>
+          <h4>Check-in overdue</h4>
+          <small>Grace period</small>
+        </div>
+      </header>
+      <span className="phone-badge phone-badge-warn"><LuTriangleAlert aria-hidden="true" /> Grace period running</span>
+      <div className="phone-progress" aria-hidden="true"><i /></div>
+      <ul className="phone-steps">
+        <li className="done"><LuCheck aria-hidden="true" /> Reminder sent</li>
+        <li className="now"><LuClock aria-hidden="true" /> Grace period</li>
+        <li><LuClock aria-hidden="true" /> Contact alert (preview only)</li>
+      </ul>
+      <div className="phone-bubble">This demo advances manually. No contact is notified when the grace period ends.</div>
+      <div className="phone-spacer" />
+      <button type="button" tabIndex={-1} className="phone-cta">
+        <LuCheck aria-hidden="true" /> I’m okay
+      </button>
+      <button type="button" tabIndex={-1} className="phone-cta phone-cta-ghost">Add 15 minutes</button>
     </div>,
-    <div key="s3" className="absolute inset-0 p-5 space-y-3">
-      <h4 className="font-display font-extrabold text-base m-0">Brian’s alert preview</h4>
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amberbg text-amber">
-        <LuTriangleAlert size={12} /> Verify safety
-      </span>
-      <div className="bg-surface border border-line rounded-[14px] p-3 text-sm">
+    <div key="s3" className="phone-slide">
+      <header className="phone-app-head">
+        <span className="phone-app-icon phone-app-icon-warn" aria-hidden="true" />
+        <div>
+          <h4>Brian’s alert preview</h4>
+          <small>Contact view</small>
+        </div>
+      </header>
+      <span className="phone-badge phone-badge-warn"><LuTriangleAlert aria-hidden="true" /> Verify safety</span>
+      <div className="phone-bubble phone-bubble-card">
         Wanjiru hasn’t confirmed arrival yet. <b>This may be a dead battery or poor signal.</b> Last known:
         Westlands, 1:42 AM. Please call first. If you believe she is in danger, call 999 or 112.
       </div>
-      <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-accentbg text-accent">
-        Scripted sample from the facts shown
-      </span>
+      <span className="phone-badge phone-badge-accent">Scripted sample from the facts shown</span>
+      <div className="phone-spacer" />
+      <button type="button" tabIndex={-1} className="phone-cta phone-cta-amber">Call 999 / 112</button>
+      <button type="button" tabIndex={-1} className="phone-cta phone-cta-ghost">Preview: call Wanjiru</button>
     </div>,
   ];
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="relative w-[292px] bg-deep border-line border-8 rounded-[40px] p-2.5 shadow-[0_40px_70px_rgba(0,0,0,0.6)]">
-        <div className="relative h-[430px] rounded-[28px] bg-surface text-ink overflow-hidden">
-          {screens.map((node, idx) => (
-            <div
-              key={idx}
-              className={`transition-all duration-500 ${
-                idx === i ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none'
-              }`}
-            >
-              {node}
+    <div className="phone-wrap">
+      <div className="phone" role="group" aria-roledescription="carousel" aria-label="TukoSafe app preview">
+        <span className="phone-btn phone-btn-action" aria-hidden="true" />
+        <span className="phone-btn phone-btn-vol-up" aria-hidden="true" />
+        <span className="phone-btn phone-btn-vol-down" aria-hidden="true" />
+        <span className="phone-btn phone-btn-power" aria-hidden="true" />
+        <div className="phone-bezel">
+          <div className="phone-screen">
+            <div className="phone-island" aria-hidden="true"><span /></div>
+            <StatusBar />
+            <div className="phone-stage">
+              {screens.map((node, idx) => (
+                <div
+                  key={idx}
+                  className="phone-stage-item"
+                  data-active={idx === i}
+                  aria-hidden={idx !== i}
+                  inert={idx !== i}
+                >
+                  {node}
+                </div>
+              ))}
             </div>
-          ))}
+            <div className="phone-home-bar" aria-hidden="true" />
+            <div className="phone-glass" aria-hidden="true" />
+          </div>
         </div>
       </div>
-      <div className="flex gap-2 justify-center mt-4">
+
+      <div className="phone-dots" role="tablist" aria-label="Preview slides">
         {[0, 1, 2].map((n) => (
-          <span key={n} className={`h-1.5 rounded-full transition-all ${n === i ? 'bg-amber w-11' : 'bg-surface/20 w-6'}`} />
+          <button
+            key={n}
+            type="button"
+            role="tab"
+            aria-selected={n === i}
+            aria-label={`Show slide ${n + 1} of 3`}
+            onClick={() => { setI(n); setPaused(true); }}
+            className={n === i ? 'on' : ''}
+          />
         ))}
       </div>
-      <p className="text-center text-white/90 text-sm mt-2 min-h-[1.5em]" role="status">{CAPTIONS[i]}</p>
+      <p className="phone-caption" role="status">{CAPTIONS[i]}</p>
     </div>
   );
 }
