@@ -15,20 +15,20 @@ export default function Logo({ className = '', title = 'TukoSafe', wordmark = tr
         focusable="false"
       >
         {/* foundation line */}
-        <path d="M 44 136 L 156 136" stroke="#1d6fa5" stroke-width="7" stroke-linecap="round" />
+        <path d="M 44 136 L 156 136" stroke="#1d6fa5" strokeWidth="7" strokeLinecap="round" />
         {/* holding hands / arms (teal) */}
         <path
           d="M 62 128 Q 54 110 66 92 Q 74 80 84 90"
           stroke="#2aa8a0"
-          stroke-width="15"
-          stroke-linecap="round"
+          strokeWidth="15"
+          strokeLinecap="round"
           fill="none"
         />
         <path
           d="M 138 128 Q 146 110 134 92 Q 126 80 116 90"
           stroke="#2aa8a0"
-          stroke-width="15"
-          stroke-linecap="round"
+          strokeWidth="15"
+          strokeLinecap="round"
           fill="none"
         />
         {/* shield outline (protection blue) */}
@@ -36,14 +36,14 @@ export default function Logo({ className = '', title = 'TukoSafe', wordmark = tr
           d="M 100 30 L 142 58 L 152 100 Q 152 126 110 130 L 100 124 L 90 130 Q 48 126 48 100 L 58 58 Z"
           fill="none"
           stroke="#1d6fa5"
-          stroke-width="7"
-          stroke-linejoin="round"
+          strokeWidth="7"
+          strokeLinejoin="round"
         />
         {/* shield inner */}
         <path
           d="M 100 40 L 132 62 L 140 100 Q 140 120 102 124 L 100 120 L 98 124 Q 60 120 60 100 L 68 62 Z"
           fill="#5b9bd5"
-          fill-opacity="0.55"
+          fillOpacity="0.55"
         />
         {/* tree trunk */}
         <rect x="96" y="100" width="8" height="24" rx="4" fill="#4a9a5a" />
