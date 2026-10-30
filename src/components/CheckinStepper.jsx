@@ -6,10 +6,10 @@ export default function CheckinStepper({ step }) {
       {CHECKIN_STEPS.map((label, i) => {
         const cls =
           i < step
-            ? 'bg-greenbg text-green'
+            ? 'bg-safebg text-safe'
             : i === step
             ? step === 3
-              ? 'bg-redbg text-red'
+              ? 'bg-alertbg text-alert'
               : 'bg-amberbg text-amber'
             : 'bg-line text-mut';
         return (

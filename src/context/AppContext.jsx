@@ -7,6 +7,7 @@ const AppContext = createContext(null);
 const LS_KEY = 'tukosafe.support.requests';
 
 export function AppProvider({ children }) {
+  const [theme, setThemeState] = useState(loadTheme);
   const [user] = useState(USER);
   const [lang, setLang] = useState('en');
   const [ai, setAi] = useState({ checkin: true, copilot: true, brief: true });
@@ -58,11 +59,22 @@ export function AppProvider({ children }) {
   }, [offline, showToast]);
 
   useEffect(() => {
-    if (!offline && outbox.length) {
-      showToast(`Back online. Sent ${outbox.length} queued item(s).`);
-      setOutbox([]);
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem(STORAGE_KEY, theme);
+    } catch {
+      // ignore
     }
-  }, [offline, outbox.length, showToast]);
+  }, [theme]);
+
+  useEffect(() => {
+    if (!sharing) return undefined;
+    const timeout = window.setTimeout(
+      () => setSharing(false),
+      Math.max(0, expiresAt - Date.now())
+    );
+    return () => window.clearTimeout(timeout);
+  }, [sharing, expiresAt]);
 
   const setPositionFromCoords = useCallback((c, ts) => {
     setPos({
@@ -379,10 +391,4 @@ export function AppProvider({ children }) {
       {children}
     </AppContext.Provider>
   );
-}
-
-export function useApp() {
-  const ctx = useContext(AppContext);
-  if (!ctx) throw new Error('useApp must be used inside AppProvider');
-  return ctx;
 }

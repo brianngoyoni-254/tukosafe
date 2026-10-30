@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/app-context';
 
 export default function SosButton() {
   const { send, setSos, setStep, showToast } = useApp();
