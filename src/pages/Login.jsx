@@ -1,13 +1,23 @@
-import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Link, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
   LuMail, LuLock, LuEye, LuEyeOff, LuArrowRight, LuArrowLeft,
   LuShieldCheck, LuHouse, LuCircleAlert,
 } from 'react-icons/lu';
 import { useAuth } from '../context/AuthContext';
+import ConfigNotice from '../components/ConfigNotice';
+
+// Supabase redirects failed email links back here as #error=...&error_description=...
+function linkErrorFromHash(hash) {
+  const p = new URLSearchParams((hash || '').replace(/^#/, ''));
+  if (!p.get('error')) return '';
+  return p.get('error_code') === 'otp_expired'
+    ? 'That email link is invalid or has expired. Sign in below; if your email is not verified yet you can resend the confirmation email.'
+    : (p.get('error_description') || 'That email link could not be used.').replace(/\+/g, ' ');
+}
 
 export default function Login() {
-  const { login, error, clearError } = useAuth();
+  const { login, error, clearError, isAuthenticated, resendVerification } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || '/';
@@ -16,13 +26,26 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [resendMsg, setResendMsg] = useState('');
+  const linkError = useMemo(() => linkErrorFromHash(location.hash), [location.hash]);
+  const shownError = error || linkError;
+  const needsVerification = /verify your email/i.test(error || '') || /expired/i.test(linkError);
+
+  // Opening the confirmation link in the email signs the user in; take them to the app.
+  if (isAuthenticated) return <Navigate to={from} replace />;
 
   const submit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setResendMsg('');
     const result = await login({ email, password, remember });
     setSubmitting(false);
     if (result.ok) navigate(from, { replace: true });
+  };
+
+  const resend = async () => {
+    const r = await resendVerification(email);
+    setResendMsg(r.ok ? 'Confirmation email sent. Check your inbox (and spam).' : r.error);
   };
 
   return (
@@ -57,7 +80,7 @@ export default function Login() {
             <span className="text-amber">Get home safe.</span>
           </h1>
           <p className="text-[#bfe0da] text-lg max-w-[42ch]">
-            Sign in to pick up where you left off — your outings, contacts and check-ins are waiting.
+            Sign in to pick up where you left off - your outings, contacts and check-ins are waiting.
           </p>
           <div className="mt-8 grid grid-cols-2 gap-3 max-w-[440px]">
             {[
@@ -104,12 +127,22 @@ export default function Login() {
             <h2 className="font-display font-extrabold text-2xl mb-1">Sign in</h2>
             <p className="text-mut text-sm mb-6">Welcome back. Enter your details to continue.</p>
 
-            {error && (
+            <ConfigNotice />
+
+            {shownError && (
               <div className="mb-4 p-3 rounded-lg bg-redbg text-red text-sm font-medium border border-red/20 flex items-start gap-2" role="alert">
                 <LuCircleAlert size={16} className="mt-0.5 shrink-0" />
-                <span>{error}</span>
+                <div>
+                  <span>{shownError}</span>
+                  {needsVerification && (
+                    <button type="button" onClick={resend} disabled={!email} className="block mt-2 font-bold underline disabled:opacity-60">
+                      {email ? 'Resend confirmation email' : 'Enter your email above to resend the confirmation'}
+                    </button>
+                  )}
+                </div>
               </div>
             )}
+            {resendMsg && <p className="mb-4 text-sm" role="status">{resendMsg}</p>}
 
             <form onSubmit={submit} className="space-y-4">
               <div>

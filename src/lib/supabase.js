@@ -1,9 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
+import { evaluateConfig, pickKey } from './supabaseConfig';
 
-const url = import.meta.env.VITE_SUPABASE_URL;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Public key: the new "publishable" key or the legacy "anon" key (publishable wins if both are set).
+const config = evaluateConfig({
+  url: import.meta.env.VITE_SUPABASE_URL,
+  key: pickKey(import.meta.env).value,
+});
+const url = config.url;
+const anonKey = config.key;
 
-export const isBackendConfigured = Boolean(url && anonKey);
+export const isBackendConfigured = config.ok;
+/** Human-readable reason the backend is unusable (empty string when configured). */
+export const configProblem = config.problem;
 
 const REMEMBER_KEY = 'tukosafe.remember';
 
@@ -40,7 +48,7 @@ const sessionAwareStorage = {
   },
 };
 
-// Never throws at import time; the UI shows a setup notice when unconfigured.
+// Never throws at import time; the UI shows a setup notice when unconfigured or when the key is unsafe.
 export const supabase = isBackendConfigured
   ? createClient(url, anonKey, {
       auth: {

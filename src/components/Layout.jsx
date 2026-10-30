@@ -1,115 +1,25 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import {
-  LuHouse, LuMap, LuUsers, LuMessageCircle, LuLifeBuoy,
-  LuBookOpen, LuShieldCheck, LuInfo, LuPhone, LuCircleAlert,
-  LuMenu, LuX, LuLogIn, LuLogOut, LuUser,
-  LuSettings, LuChevronDown,
-} from 'react-icons/lu';
+import { useEffect } from 'react';
+import { LuHouse, LuPhone, LuCircleAlert } from 'react-icons/lu';
 import { useAuth } from '../context/AuthContext';
-import { useApp } from '../context/app-context';
-import { THEMES, THEME_MARK } from '../data/themes';
 import Logo from './Logo';
 import Toast from './Toast';
-import NotificationBell from './NotificationBell';
+import Navbar from './Navbar';
+import ThemeSelector from './nav/ThemeSelector';
 
-const PRIMARY_NAV = [
-  { to: '/', label: 'Home', icon: LuHouse },
-  { to: '/how', label: 'How it works', icon: LuBookOpen },
-  { to: '/map', label: 'Live map', icon: LuMap },
-  { to: '/outing', label: 'Outing', icon: LuUsers },
-  { to: '/checkin', label: 'Check-in', icon: LuMessageCircle },
-  { to: '/help', label: 'Get help', icon: LuLifeBuoy },
-];
-
-const SECONDARY_NAV = [
-  { to: '/contacts', label: 'Contacts', icon: LuUsers },
-  { to: '/contact', label: 'Contact view', icon: LuCircleAlert },
-  { to: '/trust', label: 'Trust Panel', icon: LuShieldCheck },
-  { to: '/safety', label: 'Safety', icon: LuShieldCheck },
-  { to: '/about', label: 'About', icon: LuInfo },
-];
-
-function ThemeSelector({ theme, setTheme }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative inline-block">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen(!open);
-        }}
-        className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-white/20 text-white text-sm font-semibold hover:bg-white/10 no-underline transition-colors"
-        aria-label="Choose colour theme"
-        aria-expanded={open}
-      >
-        <span className="shrink-0" style={{ width: 16, height: 16, borderRadius: '50%', backgroundColor: THEME_MARK[theme], border: '1px solid rgba(255,255,255,0.35)', display: 'inline-block' }} />
-        <span className="hidden sm:inline">{theme.charAt(0).toUpperCase() + theme.slice(1)}</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="opacity-90 shrink-0"><polyline points="6 9 12 15 18 9" /></svg>
-      </button>
-      {open && (
-        <div className="absolute right-0 mt-[-1px] w-48 rounded-xl border border-white/20 bg-white/10 p-1 shadow-2xl backdrop-blur-md" onMouseLeave={() => setOpen(false)}>
-          {THEMES.map((t) => (
-            <button key={t.id} onClick={() => { setTheme(t.id); setOpen(false); }} className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-[#bfe0da] hover:bg-white/20 hover:text-white no-underline transition-colors ${theme === t.id ? 'bg-white/20 text-white font-semibold' : ''}`}>
-              <span className="w-6 h-6 rounded-full border border-white/30 shrink-0" style={{ backgroundColor: THEME_MARK[t.id] }} />
-              <span>{t.label}</span>
-              <span className="ml-auto text-xs opacity-70">{t.desc}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+const FOOTER_LINK = 'text-[#bfe0da] hover:text-white no-underline';
 
 export default function Layout({ children }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
-  const { theme, setTheme } = useApp();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
-  // Close menus when the route changes (sync with an external router event).
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setMobileOpen(false); setUserMenuOpen(false); }, [pathname]);
 
-  // Lock body scroll while drawer is open
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [mobileOpen]);
-
-  // Close menus on Escape
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape') { setMobileOpen(false); setUserMenuOpen(false); }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
-  // Close user menu on outside click
-  useEffect(() => {
-    if (!userMenuOpen) return;
-    const onClick = (e) => {
-      if (!e.target.closest('[data-user-menu]')) setUserMenuOpen(false);
-    };
-    document.addEventListener('mousedown', onClick);
-    return () => document.removeEventListener('mousedown', onClick);
-  }, [userMenuOpen]);
-
-  const handleLogout = () => {
-    logout();
-    setUserMenuOpen(false);
-    setMobileOpen(false);
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
   };
-
-  const initials = user
-    ? (user.name || 'U').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
-    : '';
 
   return (
     <div className="min-h-screen flex flex-col bg-surface text-ink font-body">
@@ -254,7 +164,6 @@ export default function Layout({ children }) {
         </div>
       </header>
 
-      </header>
       {/* ============ MOBILE DRAWER (slides from LEFT) ============ */}
       {mobileOpen && (
         <>
@@ -371,10 +280,10 @@ export default function Layout({ children }) {
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-[#8fb9b2] mb-3">Product</p>
               <ul className="space-y-2 text-sm list-none p-0 m-0">
-                <li><Link to="/how" className="text-[#bfe0da] hover:text-white no-underline">How it works</Link></li>
-                <li><Link to="/map" className="text-[#bfe0da] hover:text-white no-underline">Live map</Link></li>
-                <li><Link to="/trust" className="text-[#bfe0da] hover:text-white no-underline">Trust Panel</Link></li>
-                <li><Link to="/safety" className="text-[#bfe0da] hover:text-white no-underline">Safety resources</Link></li>
+                <li><Link to="/how" className={FOOTER_LINK}>How it works</Link></li>
+                <li><Link to="/map" className={FOOTER_LINK}>Live map</Link></li>
+                <li><Link to="/trust" className={FOOTER_LINK}>Trust Panel</Link></li>
+                <li><Link to="/safety" className={FOOTER_LINK}>Safety resources</Link></li>
               </ul>
             </div>
             <div>
@@ -382,21 +291,17 @@ export default function Layout({ children }) {
               <ul className="space-y-2 text-sm list-none p-0 m-0">
                 {isAuthenticated ? (
                   <>
-                    <li><Link to="/profile" className="text-[#bfe0da] hover:text-white no-underline">Profile</Link></li>
+                    <li><Link to="/profile" className={FOOTER_LINK}>Profile</Link></li>
                     <li>
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="text-[#bfe0da] hover:text-white no-underline bg-transparent border-0 p-0 cursor-pointer text-sm"
-                      >
+                      <button type="button" onClick={handleLogout} className="text-[#bfe0da] hover:text-white bg-transparent border-0 p-0 cursor-pointer text-sm">
                         Sign out
                       </button>
                     </li>
                   </>
                 ) : (
                   <>
-                    <li><Link to="/login" className="text-[#bfe0da] hover:text-white no-underline">Sign in</Link></li>
-                    <li><Link to="/signup" className="text-[#bfe0da] hover:text-white no-underline">Create account</Link></li>
+                    <li><Link to="/login" className={FOOTER_LINK}>Sign in</Link></li>
+                    <li><Link to="/signup" className={FOOTER_LINK}>Create account</Link></li>
                   </>
                 )}
               </ul>
@@ -404,29 +309,30 @@ export default function Layout({ children }) {
             <div>
               <p className="text-[10px] font-bold uppercase tracking-wider text-[#8fb9b2] mb-3">Emergency</p>
               <ul className="space-y-2 text-sm list-none p-0 m-0">
-                <li><a href="tel:999" className="text-[#bfe0da] hover:text-white no-underline">Call 999</a></li>
-                <li><a href="tel:112" className="text-[#bfe0da] hover:text-white no-underline">Call 112</a></li>
-                <li><a href="tel:1195" className="text-[#bfe0da] hover:text-white no-underline">1195 · Gender violence</a></li>
-                <li><a href="tel:116" className="text-[#bfe0da] hover:text-white no-underline">116 · Child helpline</a></li>
+                <li><a href="tel:999" className={FOOTER_LINK}>Call 999</a></li>
+                <li><a href="tel:112" className={FOOTER_LINK}>Call 112</a></li>
+                <li><a href="tel:1195" className={FOOTER_LINK}>1195 · Gender violence</a></li>
+                <li><a href="tel:116" className={FOOTER_LINK}>116 · Child helpline</a></li>
               </ul>
             </div>
           </div>
-          <div className="mt-8 pt-6 border-t border-white/10 text-xs opacity-80">
-            <p className="m-0">
+          <div className="mt-8 pt-6 border-t border-white/10 text-xs flex flex-wrap items-center justify-between gap-4">
+            <p className="m-0 opacity-80 max-w-[70ch]">
               TukoSafe is not an emergency service. Notifying friends is not dispatching responders.
-              Prototype build. Status colours are not a guarantee.
+              Status indicators are not a guarantee of anyone&apos;s safety.
             </p>
+            <ThemeSelector direction="up" />
           </div>
         </div>
       </footer>
 
-      {/* Mobile dock */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 grid grid-cols-3 gap-2 bg-deep border-t border-white/10 px-3 py-2.5 pb-[calc(10px+env(safe-area-inset-bottom,0px))]">
-        <Link to="/help" className="inline-flex items-center justify-center gap-1.5 min-h-12 px-2 rounded-xl bg-amber text-[#1b1200] font-bold text-sm no-underline"><LuHouse size={16} /> Get Me Home</Link>
-        <Link to="/help" className="inline-flex items-center justify-center gap-1.5 min-h-12 px-2 rounded-xl bg-red text-white font-bold text-sm no-underline"><LuCircleAlert size={16} /> SOS</Link>
-        <a href="tel:999" className="inline-flex items-center justify-center gap-1.5 min-h-12 px-2 rounded-xl border-2 border-white/30 text-white font-bold text-sm no-underline"><LuPhone size={16} /> Call 999</a>
+      {/* Mobile dock (shown whenever the main navigation is collapsed) */}
+      <div className="min-[1240px]:hidden fixed bottom-0 left-0 right-0 z-30 grid grid-cols-3 gap-2 bg-deep border-t border-white/10 px-3 py-2.5 pb-[calc(10px+env(safe-area-inset-bottom,0px))]">
+        <Link to="/help" className="inline-flex items-center justify-center gap-1.5 min-h-12 px-2 rounded-xl bg-amber text-[#1b1200] font-bold text-sm no-underline"><LuHouse size={16} aria-hidden="true" /> Get Me Home</Link>
+        <Link to="/help" className="inline-flex items-center justify-center gap-1.5 min-h-12 px-2 rounded-xl bg-red text-white font-bold text-sm no-underline"><LuCircleAlert size={16} aria-hidden="true" /> SOS</Link>
+        <a href="tel:999" className="inline-flex items-center justify-center gap-1.5 min-h-12 px-2 rounded-xl border-2 border-white/30 text-white font-bold text-sm no-underline"><LuPhone size={16} aria-hidden="true" /> Call 999</a>
       </div>
-      <div className="lg:hidden h-16" />
+      <div className="min-[1240px]:hidden h-16" />
 
       <Toast />
     </div>

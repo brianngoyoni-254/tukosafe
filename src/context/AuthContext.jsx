@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { supabase, isBackendConfigured, setRemember, getRemember } from '../lib/supabase';
+import { supabase, isBackendConfigured, configProblem, setRemember, getRemember } from '../lib/supabase';
 
 const AuthContext = createContext(null);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const NOT_CONFIGURED = 'The backend is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (see .env.example).';
+const NOT_CONFIGURED = `Sign-in is unavailable: ${configProblem || 'the backend is not configured.'}`;
 
 function toUser(authUser, profile) {
   if (!authUser) return null;
@@ -37,8 +37,13 @@ export function AuthProvider({ children }) {
 
   const loadProfile = useCallback(async (authUser) => {
     if (!authUser) return null;
-    const { data } = await supabase
-      .from('profiles').select('display_name, phone').eq('id', authUser.id).maybeSingle();
+    const read = () => supabase.from('profiles').select('display_name, phone').eq('id', authUser.id).maybeSingle();
+    let { data } = await read();
+    if (!data) {
+      // Accounts created before the signup trigger existed (or if it failed) get their profile row on first sign-in.
+      const { error: healErr } = await supabase.rpc('ensure_profile');
+      if (!healErr) ({ data } = await read());
+    }
     return toUser(authUser, data);
   }, []);
 
@@ -178,6 +183,7 @@ export function AuthProvider({ children }) {
     error,
     recovery,
     configured: isBackendConfigured,
+    configProblem,
     rememberMe: getRemember(),
     clearError,
     signup,

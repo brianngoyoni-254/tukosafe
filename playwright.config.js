@@ -21,7 +21,12 @@ export default defineConfig({
     {
       command: `npx vite --port ${APP_PORT} --strictPort`,
       url: `http://localhost:${APP_PORT}`,
-      env: { VITE_SUPABASE_URL: `http://localhost:${MOCK_PORT}`, VITE_SUPABASE_ANON_KEY: 'test-anon-key' },
+      // Both names are set so a developer's own .env.local can never leak into the test run.
+      env: {
+        VITE_SUPABASE_URL: `http://localhost:${MOCK_PORT}`,
+        VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key',
+        VITE_SUPABASE_ANON_KEY: 'test-publishable-key',
+      },
       reuseExistingServer: false,
     },
   ],

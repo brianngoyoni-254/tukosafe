@@ -47,7 +47,7 @@ export default function TrustPanel() {
           </span>
           <h2 className="font-display font-extrabold text-[clamp(2rem,5vw,3.3rem)] text-white mb-2">People First, AI Second</h2>
           <p className="text-white/90 max-w-[58ch] m-0">
-            This prototype uses scripted examples and local rules; no AI service is connected. These controls preview the proposed behavior.
+            Manage who you trust. Wording suggestions use fixed templates and simple rules; no AI service is connected.
           </p>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function TrustPanel() {
             <Card>
               <b>Hard limits</b>
               <div className="text-mut text-sm">
-                No AI service or responder integration is connected in this prototype. Production versions would need technical controls to enforce these limits.
+                No AI service is connected, and TukoSafe never contacts emergency responders. Alerts go only to the trusted friends you choose.
               </div>
             </Card>
           </div>
@@ -87,7 +87,7 @@ export default function TrustPanel() {
             <Card>
               <b>Your data</b>
               <div className="text-mut text-sm">
-                Demo state stays in this browser session except the saved theme. No coordinates or phone numbers are sent to an AI service.
+                Your account, contacts, messages and alerts are stored in the TukoSafe database and visible only to the people involved. Export or delete everything below. No coordinates or phone numbers are sent to any AI service.
               </div>
               <div className="flex flex-wrap gap-2.5 mt-2.5">
                 <Button variant="outline" onClick={() => exportData().catch((e) => showToast(e.message))}><LuDownload size={16} /> Export my data</Button>
@@ -97,7 +97,7 @@ export default function TrustPanel() {
             <Card>
               <b>Flagged sample outputs ({flags.length})</b>
               {flags.length === 0 ? (
-                <div className="text-mut text-sm">None yet. Flags are stored in this demo session; no moderator queue is connected.</div>
+                <div className="text-mut text-sm">None yet. Flags are kept on this device only; no moderation queue is connected.</div>
               ) : (
                 flags.map((f, i) => <div key={i} className="text-mut text-sm">{f}</div>)
               )}

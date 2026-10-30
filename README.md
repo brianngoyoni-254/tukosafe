@@ -1,24 +1,94 @@
 # TukoSafe
 
-Go out. Have fun. Get home safe. React 19 + Vite + Tailwind 4 frontend on a Supabase backend
-(Auth, Postgres with Row Level Security, Realtime, pg_cron, one Edge Function).
+**Go out. Have fun. Get home safe.**
+
+## The problem
+
+Going out at night should be fun, but safety apps often make it stressful:
+
+- **Panic buttons trigger chaos.** One press blasts alerts to everyone with no context, so friends panic or ignore it.
+- **Location sharing never turns off.** Once you share, you're tracked indefinitely - or you forget to stop sharing.
+- **AI decides for you.** Bots auto-message responders without your approval, and you can't turn them off.
+- **One-size-fits-all look.** Bright, clinical colours that feel like a hospital, not a night out with friends.
+- **No safe way to ask for help quietly.** If you feel unsafe, there's no discreet, calm way to tell a friend.
+
+## The solution
+
+TukoSafe is a people-first safety companion built around one principle: **AI assists, people decide.**
+
+- **Quiet SOS** - press and hold to alert contacts immediately, with context so they know what to do.
+- **Opt-in, expiring sharing** - friends share location for one night only, and anyone can leave at any time.
+- **Human-centred AI** - AI only drafts and suggests. You always review, edit, and send. Every AI feature has a plain fallback.
+- **Four safe, clean colour themes** - Harbor, Grove, Coast, Ember - that blend with the shield logo and match your mood.
+- **Calm, human design** - soft edges, gentle animations, and a shield logo of hands cradling a growing tree.
+
+> From the Swahili *tuko salama* - "we are safe."
+
+TukoSafe is a prototype for looking out for friends on nights out in Kenya. Notifying friends is not dispatching responders - call 999 or 112 in an emergency.
+
+## What it does
+
+- **Create an outing** - pick friends, a time window, and a return-home plan. Sharing expires on its own.
+- **Opt-in check-ins** - friends agree to share location; anyone can leave at any time.
+- **Quiet SOS** - press and hold to alert contacts immediately; no noisy panic.
+- **Get Me Home** - send a calm, pre-approved message to friends when you're on your way back.
+- **Live map** - see where your friends are (only while they've consented and sharing is active).
+- **Trust Panel** - see who has consented, who's joined, and who's been told first.
+- **Safety resources** - emergency numbers (999, 112, 1195, 116) and a before-you-go checklist.
+
+## Design
+
+TukoSafe is built to feel safe, clean, and human - a direct answer to the problems above:
+
+- **Four colour themes** that blend with the shield logo - Harbor (deep blue trust), Grove (forest green safe haven), Coast (teal calm), Ember (warm terracotta connection). Pick one in the theme dropdown; your choice is remembered.
+- **Logo** - a protection shield with two hands cradling a growing tree, used across the header, footer, mobile dock, and browser tab.
+- **Human-centred AI** - AI only drafts and suggests; you always review, edit, and send. Every AI feature has a plain fallback, so help is never blocked by AI being off.
+- **Safety first** - SOS red stays red regardless of theme. Notifying friends is not dispatching responders; this is a prototype, not an emergency service.
+
+## Tech stack
+
+React 19 + Vite + Tailwind 4 frontend on a Supabase backend (Auth, Postgres with Row Level Security, Realtime, pg_cron, one Edge Function).
 
 ## Setup
 
-1. Create a Supabase project. Auth > Providers > Email: keep "Confirm email" on.
-   Auth > URL configuration: add your site URL (e.g. `http://localhost:5173`) and its `/reset-password` path.
-2. Copy `.env.example` to `.env.local` and fill in the project URL and **anon** key.
-   Never put the `service_role` key in the frontend.
-3. Apply migrations:
+1. Create a Supabase project (supabase.com > New project).
+2. Connect the frontend. Open `.env.local` (a placeholder file is already there; it is git-ignored) and set:
+   - `VITE_SUPABASE_URL` = *Project Settings > API > Project URL*
+   - `VITE_SUPABASE_PUBLISHABLE_KEY` = *Project Settings > API > publishable / anon public key*
+     (`VITE_SUPABASE_ANON_KEY` also works for older projects; the publishable name wins if both are set)
+
+   Never use the `service_role` / secret key here: anything prefixed `VITE_` is sent to every browser.
+   The app refuses to start sign-in if it detects one, and tells you why.
+3. Dashboard settings you must do by hand (no code can do these for you):
+   - **Authentication > Sign In / Providers > Email**: enabled, **Confirm email = ON**, sign-ups not disabled.
+   - **Authentication > URL Configuration**: *Site URL* = your site (e.g. `http://localhost:5173` while developing) and add
+     *Redirect URLs*: `http://localhost:5173/login` and `http://localhost:5173/reset-password` (plus your production
+     equivalents). Without these, verification and password-reset links land on the wrong page or are rejected.
+   - **Authentication > Emails**: for real use, configure custom SMTP. Supabase's built-in mailer is heavily rate-limited
+     and only meant for testing.
+4. Apply migrations:
    ```
    npx supabase link --project-ref <ref>
    npx supabase db push
    ```
    or paste `supabase/migrations/*.sql` in order into the SQL editor.
-4. Database > Extensions: enable `pg_cron` and `pg_net`. `pg_cron` runs the overdue check-in scheduler and
+5. Database > Extensions: enable `pg_cron` and `pg_net`. `pg_cron` runs the overdue check-in scheduler and
    outing/share expiry every minute **on the server**, so alerts do not depend on any browser being open.
    Without `pg_cron` those jobs do not run.
-5. `npm install && npm run dev`
+6. `npm install`, restart the dev server (Vite only reads `.env.local` at start-up), then verify the connection:
+
+   ```sh
+   npm run check:supabase   # validates your settings and probes the live project (auth settings, migrations, RLS)
+   npm run dev
+   ```
+
+   `check:supabase` uses only the public key. It reports exactly what is missing: wrong URL/key, sign-ups disabled,
+   email confirmation off, migrations not applied, or functions callable by anonymous visitors.
+
+Sign-in behaviour: **Remember me** checked keeps the session in `localStorage` (survives closing the browser); unchecked
+keeps it in `sessionStorage` (gone when the browser session ends). Registration sends a confirmation email; opening the
+link signs the user in. A profile row is created by a database trigger at registration (and `ensure_profile()` repairs it
+if it is ever missing).
 
 ## Notifications (in-app, web push, email, SMS)
 

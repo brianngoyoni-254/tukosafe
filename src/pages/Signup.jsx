@@ -5,6 +5,7 @@ import {
   LuShieldCheck, LuUsers, LuCircleAlert,
 } from 'react-icons/lu';
 import { useAuth } from '../context/AuthContext';
+import ConfigNotice from '../components/ConfigNotice';
 
 function strength(pw) {
   if (!pw) return { score: 0, label: 'Enter a password', color: 'bg-line' };
@@ -65,7 +66,7 @@ export default function Signup() {
           <LuMail size={32} className="mx-auto text-teal mb-3" />
           <h2 className="font-display font-extrabold text-2xl mb-2">Check your email</h2>
           <p className="text-mut text-sm mb-4">
-            We sent a confirmation link to <b>{verifyEmail}</b>. Open it, then sign in.
+            We sent a confirmation link to <b>{verifyEmail}</b>. Open it to confirm your address. If you are not signed in automatically afterwards, sign in with your password.
           </p>
           {resent && <p className="text-sm mb-3" role="status">{resent}</p>}
           <button type="button" onClick={resend} className="text-teal font-bold text-sm hover:underline mr-4">Resend email</button>
@@ -111,7 +112,7 @@ export default function Signup() {
           </div>
         </div>
         <div className="relative z-10 text-sm text-[#8fb9b2]">
-          From the Swahili <i>tuko salama</i> — “we are safe”.
+          From the Swahili <i>tuko salama</i> - “we are safe”.
         </div>
         <div className="absolute -left-40 -bottom-40 w-[480px] h-[480px] rounded-full border border-teal2/20 animate-[pulse-ring_8s_ease-out_infinite]" />
         <div className="absolute -left-20 -bottom-20 w-[320px] h-[320px] rounded-full border border-teal2/15 animate-[pulse-ring_8s_ease-out_infinite_2s]" />
@@ -129,7 +130,11 @@ export default function Signup() {
 
           <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-[0_18px_50px_rgba(7,39,36,0.1)] border border-line">
             <h2 className="font-display font-extrabold text-2xl mb-1">Create your account</h2>
-            <p className="text-mut text-sm mb-6">Your data stays in this browser. Nothing is sent to a server.</p>
+            <p className="text-mut text-sm mb-6">
+              We&apos;ll email you a link to confirm your address. Your account is stored securely and only the people you choose can see anything.
+            </p>
+
+            <ConfigNotice />
 
             {error && (
               <div className="mb-4 p-3 rounded-lg bg-redbg text-red text-sm font-medium border border-red/20" role="alert">

@@ -1,14 +1,14 @@
-# TukoSafe — Backend API 🛡️
+# TukoSafe - Backend API 🛡️
 
-> **Youth Social Safety & Emergency Support Platform — “Go Out. Have Fun. Get Home Safe.”**
+> **Youth Social Safety & Emergency Support Platform - “Go Out. Have Fun. Get Home Safe.”**
 > *TukoSafe is not an emergency service. In an emergency, call **999** or **112**.*
 
-Python (FastAPI) backend for the **Moringa Hackathon 2026** — theme: *Human-Centered
+Python (FastAPI) backend for the **Moringa Hackathon 2026** - theme: *Human-Centered
 Technology: Building Trust in Communities.*
 
 ---
 
-## ✨ What it does (MVP scope — Project Documentation v1.0)
+## ✨ What it does (MVP scope - Project Documentation v1.0)
 
 | Feature | Endpoints | Spec |
 |---|---|---|
@@ -26,7 +26,7 @@ Technology: Building Trust in Communities.*
 | Live group channel (WebSocket) | `WS /ws/outings/{id}?token=...` | §9 |
 
 **Check-in escalation state machine:** `SCHEDULED → REMINDER_SENT → GRACE_PERIOD → CONTACT_ALERTED → RESOLVED`
-(any state → `RESOLVED` on “I’m okay”; SOS jumps straight to alerted — §7.2/7.3).
+(any state → `RESOLVED` on “I’m okay”; SOS jumps straight to alerted - §7.2/7.3).
 
 ### Architecture
 
@@ -39,7 +39,7 @@ Technology: Building Trust in Communities.*
 ```
 
 Push-first alerts with **SMS fallback**, every delivery recorded in `alert_deliveries`.
-Providers are optional — without credentials the API runs in **log-mode** so the demo
+Providers are optional - without credentials the API runs in **log-mode** so the demo
 works with zero setup. Notifications are bilingual (English / Kiswahili), calm and
 verification-first (see `app/services/notifications.py`).
 
@@ -82,7 +82,7 @@ pytest -q
 3. **Brian creates outing** “Saturday Night Out”, invites Amani; Amani joins.
 4. **Amani starts a share** (`POST /shares` scope `outing`) and pushes a point
    (`-1.2921, 36.8219`); **Brian sees her on the group map** (`GET /outings/{id}`).
-5. **Schedule a check-in due now** (`due_in_minutes: 0, grace_min: 0`), wait ~30s —
+5. **Schedule a check-in due now** (`due_in_minutes: 0, grace_min: 0`), wait ~30s -
    the worker escalates and **Amani gets the calm verification alert**.
 6. **Trigger SOS** (`POST /sos` silent mode) → instant alert → **Amani acks** → Brian resolves.
 7. **Get Me Home option 1** → discreet “call me” message. **Start a journey** →
@@ -100,13 +100,13 @@ Seeded shortcut: run `python scripts/seed_demo.py` and join outing code **DEMO12
 - Short-lived JWTs + refresh rotation, OTP rate limiting, audit log on every
   sensitive action, TLS-ready, secrets via env/vault.
 - Designed for **Kenya Data Protection Act, 2019** (consent basis, DPIA-ready,
-  data-subject rights) — see `HUMAN_IMPACT.md`. Legal review required before launch.
+  data-subject rights) - see `HUMAN_IMPACT.md`. Legal review required before launch.
 - 18+ recommended for MVP; under-18 is a separate legally-reviewed track.
 
 ## ⚠️ Honest limits
 
 GPS can fail, phones die, alerts get missed. Notifying friends is **not**
-dispatching responders — every critical screen carries the 999/112 notice.
+dispatching responders - every critical screen carries the 999/112 notice.
 
 ## 🧰 Tech stack
 
@@ -120,10 +120,10 @@ plus project documentation v1.0 as the requirements source. No user data involve
 
 ## 👥 Team roles (edit me)
 
-- Backend — …
-- Mobile (Expo) — …
-- Design — …
-- Safety/community & pitch — …
+- Backend - …
+- Mobile (Expo) - …
+- Design - …
+- Safety/community & pitch - …
 
 ## 📁 Repo layout
 
