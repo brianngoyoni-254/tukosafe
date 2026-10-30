@@ -1,10 +1,12 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import {
   LuHouse, LuMap, LuUsers, LuMessageCircle, LuLifeBuoy,
   LuBookOpen, LuShieldCheck, LuInfo, LuPhone, LuCircleAlert,
-  LuMenu, LuX, LuChevronRight,
+  LuMenu, LuX, LuChevronRight, LuLogIn, LuLogOut, LuUser,
+  LuSettings, LuArrowLeft, LuChevronDown,
 } from 'react-icons/lu';
+import { useAuth } from '../context/AuthContext';
 import Toast from './Toast';
 
 const PRIMARY_NAV = [
@@ -26,10 +28,13 @@ const SECONDARY_NAV = [
 
 export default function Layout({ children }) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
+  useEffect(() => { setMobileOpen(false); setUserMenuOpen(false); }, [pathname]);
 
   // Lock body scroll while drawer is open
   useEffect(() => {
@@ -37,12 +42,35 @@ export default function Layout({ children }) {
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
 
-  // Close on Escape
+  // Close menus on Escape
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') setMobileOpen(false); };
-    if (mobileOpen) window.addEventListener('keydown', onKey);
+    const onKey = (e) => {
+      if (e.key === 'Escape') { setMobileOpen(false); setUserMenuOpen(false); }
+    };
+    window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [mobileOpen]);
+  }, []);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    const onClick = (e) => {
+      if (!e.target.closest('[data-user-menu]')) setUserMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [userMenuOpen]);
+
+  const handleLogout = () => {
+    logout();
+    setUserMenuOpen(false);
+    setMobileOpen(false);
+    navigate('/');
+  };
+
+  const initials = user
+    ? (user.name || 'U').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+    : '';
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f4f8f7] text-ink font-body">
@@ -53,7 +81,6 @@ export default function Layout({ children }) {
 
             {/* LEFT: mobile hamburger + brand */}
             <div className="flex items-center gap-2 shrink-0">
-              {/* Mobile-only hamburger, far left */}
               <button
                 type="button"
                 onClick={() => setMobileOpen((v) => !v)}
@@ -64,7 +91,6 @@ export default function Layout({ children }) {
                 {mobileOpen ? <LuX size={22} /> : <LuMenu size={22} />}
               </button>
 
-              {/* Brand */}
               <Link
                 to="/"
                 className="flex items-center gap-2.5 text-white no-underline group"
@@ -100,7 +126,7 @@ export default function Layout({ children }) {
               })}
             </nav>
 
-            {/* RIGHT: emergency + CTA (desktop only) */}
+            {/* RIGHT: emergency + auth */}
             <div className="hidden lg:flex items-center gap-2.5 shrink-0">
               <a
                 href="tel:999"
@@ -110,13 +136,76 @@ export default function Layout({ children }) {
                 <LuPhone size={14} />
                 999
               </a>
-              <Link
-                to="/help"
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-amber text-[#1b1200] font-bold text-sm no-underline hover:brightness-105 transition"
-              >
-                <LuHouse size={15} />
-                Get Me Home
-              </Link>
+
+              {isAuthenticated ? (
+                <div className="relative" data-user-menu>
+                  <button
+                    type="button"
+                    onClick={() => setUserMenuOpen((v) => !v)}
+                    aria-expanded={userMenuOpen}
+                    aria-haspopup="menu"
+                    className="inline-flex items-center gap-2 h-9 pl-1.5 pr-3 rounded-lg text-sm font-semibold text-white hover:bg-white/10 transition-colors"
+                  >
+                    <span className="w-7 h-7 rounded-full bg-amber text-[#1b1200] grid place-items-center font-bold text-xs">
+                      {initials}
+                    </span>
+                    <span className="max-w-[120px] truncate">{user.name}</span>
+                    <LuChevronDown size={14} className={`transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {userMenuOpen && (
+                    <div
+                      role="menu"
+                      className="absolute right-0 mt-2 w-56 rounded-xl bg-white border border-line shadow-[0_18px_50px_rgba(7,39,36,0.15)] overflow-hidden animate-[fadeIn_.15s_ease-out]"
+                    >
+                      <div className="px-4 py-3 border-b border-line bg-[#fafcfb]">
+                        <p className="text-xs text-mut m-0">Signed in as</p>
+                        <p className="text-sm font-bold m-0 truncate">{user.email}</p>
+                      </div>
+                      <div className="p-1.5">
+                        <Link
+                          to="/profile"
+                          role="menuitem"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-ink hover:bg-mint no-underline"
+                        >
+                          <LuUser size={15} /> Profile
+                        </Link>
+                        <Link
+                          to="/profile"
+                          role="menuitem"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-ink hover:bg-mint no-underline"
+                        >
+                          <LuSettings size={15} /> Settings
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          role="menuitem"
+                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red hover:bg-redbg transition-colors"
+                        >
+                          <LuLogOut size={15} /> Sign out
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm font-semibold text-[#bfe0da] hover:text-white hover:bg-white/5 no-underline transition-colors"
+                  >
+                    <LuLogIn size={14} /> Sign in
+                  </Link>
+                  <Link
+                    to="/help"
+                    className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-amber text-[#1b1200] font-bold text-sm no-underline hover:brightness-105 transition"
+                  >
+                    <LuHouse size={15} />
+                    Get Me Home
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -126,7 +215,7 @@ export default function Layout({ children }) {
       {mobileOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
             onClick={() => setMobileOpen(false)}
             aria-hidden="true"
           />
@@ -134,9 +223,28 @@ export default function Layout({ children }) {
             className="fixed top-16 left-0 bottom-0 z-50 w-[300px] max-w-[85vw] bg-deep text-white lg:hidden overflow-y-auto border-r border-white/10 shadow-2xl animate-[slideIn_.2s_ease-out]"
             role="dialog"
             aria-label="Menu"
-            style={{ animationFillMode: 'forwards' }}
           >
             <div className="p-4 space-y-6">
+              {/* User card (mobile) */}
+              {isAuthenticated ? (
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                  <span className="w-10 h-10 rounded-full bg-amber text-[#1b1200] grid place-items-center font-bold text-sm">
+                    {initials}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold m-0 truncate">{user.name}</p>
+                    <p className="text-xs text-[#8fb9b2] m-0 truncate">{user.email}</p>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="flex items-center justify-center gap-2 h-11 rounded-lg bg-amber text-[#1b1200] font-bold text-sm no-underline"
+                >
+                  <LuLogIn size={16} /> Sign in
+                </Link>
+              )}
+
               {/* Primary */}
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-[#8fb9b2] mb-2 px-2">
@@ -197,7 +305,20 @@ export default function Layout({ children }) {
                 </nav>
               </div>
 
-              {/* CTA */}
+              {/* Sign out (mobile) */}
+              {isAuthenticated && (
+                <div className="pt-2 border-t border-white/10">
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-2 h-11 rounded-lg border-2 border-white/20 text-white font-bold text-sm hover:bg-white/5 transition"
+                  >
+                    <LuLogOut size={16} /> Sign out
+                  </button>
+                </div>
+              )}
+
+              {/* Emergency CTA */}
               <div className="pt-2 border-t border-white/10 space-y-2">
                 <Link
                   to="/help"
@@ -222,7 +343,7 @@ export default function Layout({ children }) {
       {/* ============ FOOTER ============ */}
       <footer className="bg-deep text-[#bfe0da] mt-10">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid gap-8 md:grid-cols-[2fr_1fr_1fr]">
+          <div className="grid gap-8 md:grid-cols-[2fr_1fr_1fr_1fr]">
             <div>
               <Link to="/" className="inline-flex items-center gap-2.5 text-white no-underline mb-3">
                 <span className="w-7 h-7 rounded-[50%_50%_50%_4px] bg-amber -rotate-45 inline-block" />
@@ -239,6 +360,30 @@ export default function Layout({ children }) {
                 <li><Link to="/map" className="text-[#bfe0da] hover:text-white no-underline">Live map</Link></li>
                 <li><Link to="/trust" className="text-[#bfe0da] hover:text-white no-underline">Trust Panel</Link></li>
                 <li><Link to="/safety" className="text-[#bfe0da] hover:text-white no-underline">Safety resources</Link></li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#8fb9b2] mb-3">Account</p>
+              <ul className="space-y-2 text-sm list-none p-0 m-0">
+                {isAuthenticated ? (
+                  <>
+                    <li><Link to="/profile" className="text-[#bfe0da] hover:text-white no-underline">Profile</Link></li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="text-[#bfe0da] hover:text-white no-underline bg-transparent border-0 p-0 cursor-pointer text-sm"
+                      >
+                        Sign out
+                      </button>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li><Link to="/login" className="text-[#bfe0da] hover:text-white no-underline">Sign in</Link></li>
+                    <li><Link to="/signup" className="text-[#bfe0da] hover:text-white no-underline">Create account</Link></li>
+                  </>
+                )}
               </ul>
             </div>
             <div>
